@@ -124,6 +124,25 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
 .ad{padding:0;overflow:hidden}.adi{height:130px;background:#dfe7ef center/cover no-repeat}.adb{padding:14px 16px}.adb small{color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:10px}.adb p{margin:4px 0 8px;color:var(--mute)}
 .adb a,.bl{color:var(--teal);font-weight:500;text-decoration:none}.bl{display:block;padding:7px 0;border-bottom:1px solid #eef2f6}.bl:last-child{border:0}
 @media(max-width:1100px){.hgrid{grid-template-columns:1fr}}
+
+.acts2{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}.ms{padding:8px 0;border-bottom:1px solid #eef2f6}.ms small{color:var(--mute)}.bd{background:#b91c1c;color:#fff;border-radius:10px;font-size:11px;padding:0 6px;margin-left:4px}
+#ro td{white-space:normal;vertical-align:top}#ro .nl{white-space:pre-line}#ro table{font-size:13px}
+#mtop,#dov{display:none}
+@media(min-width:801px){
+ body.nav-top #app{grid-template-columns:1fr}
+ body.nav-top aside{position:sticky;top:0;height:auto;display:flex;align-items:center;gap:4px;padding:8px 20px;overflow-x:auto;white-space:nowrap;z-index:10}
+ body.nav-top aside .brand{padding:0 16px 0 0}body.nav-top .sec{display:none}body.nav-top aside nav{display:contents}body.nav-top aside a{margin:0!important}body.nav-top #so{margin-left:auto!important}
+}
+@media(max-width:800px){
+ #mtop{display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:15;background:var(--sb,#10243a);color:#fff;padding:10px 12px}
+ #mtop .mb{background:rgba(255,255,255,.16);color:inherit;border:0;border-radius:8px;padding:8px 12px;font-weight:500;cursor:pointer}
+ body.sb-light #mtop{background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}body.sb-light #mtop .mb{background:#eef2f6}
+ aside{position:fixed!important;left:0;top:0;bottom:0;width:270px!important;height:100vh!important;transform:translateX(-102%);transition:transform .2s;z-index:30;display:block!important;overflow:auto}
+ body.drawer aside{transform:none;box-shadow:0 0 40px rgba(0,0,0,.4)}#dov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:25}body.drawer #dov{display:block}
+ .sec{display:block!important}aside nav{display:block!important}.top .chip{display:none}main{padding:14px}
+ .modal{padding:18px}.modal>.acts:last-child{position:sticky;bottom:-1px;background:#fff;padding:10px 0;z-index:2}.modal>.acts:last-child .btn{flex:1 1 auto}
+}
+@media print{#mtop,#dov{display:none!important}body.nav-top aside{display:none!important}}
 </style></head><body>
 
 <div id="login" class="lay-split">
@@ -134,12 +153,13 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
   <button class="btn full" id="lb">Sign in</button><div class="err" id="le"></div><div class="note" id="lfo"></div></div></div>
 </div>
 <div id="app" class="hide">
+ <header id="mtop"><button class="mb" id="mbtn" type="button">Menu</button><b id="mbn">IS PROJECTS</b><span style="flex:1"></span><button class="mb" id="bell2" type="button">Alerts <span class="bd hide" id="bd2">0</span></button><button class="mb" id="lo2" type="button">Sign out</button></header>
  <aside><div class="brand"><i id="bi">IS</i><div><span id="bn">IS PROJECTS</span><small id="bs">Monitoring system</small></div></div>
   <a data-v="home" class="on">Home</a><div class="sec">Monitoring</div><nav id="mons"></nav><div class="sec">Insights</div><a data-v="rep">Reports</a>
-  <div class="sec">Administration</div><a data-v="set" id="navset">Setup and users</a></aside>
+  <div class="sec">Administration</div><a data-v="set" id="navset">Setup and users</a><a id="so" style="margin-top:18px">Sign out</a></aside><div id="dov"></div>
  <main>
   <div class="top"><h1 id="vt">ISRF records</h1>
-   <div class="chip"><span id="un"></span><span class="role" id="ur"></span><button class="btn sec sm" id="lo">Sign out</button></div></div>
+   <div class="chip"><span id="un"></span><span class="role" id="ur"></span><button class="btn sec sm" id="bell" type="button">Alerts <span class="bd hide" id="bd">0</span></button><button class="btn sec sm" id="lo">Sign out</button></div></div>
   <section id="v-home"></section>
   <section id="v-isrf" class="hide">
    <div class="stats" id="stats"></div>
@@ -152,7 +172,7 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
   <section id="v-rep" class="hide">
    <div class="panel"><div class="bar np"><select id="rm"></select><select id="rg"><option>Area</option><option>Branch</option></select><select id="rn"></select>
     <input type="date" id="rf" title="From"><input type="date" id="rt" title="To"><button class="btn" id="rb">Generate</button>
-    <button class="btn sec" onclick="print()">Print / PDF</button><button class="btn sec" id="rc">Export CSV</button></div>
+    <button class="btn sec" id="rp">Print / PDF (landscape)</button><button class="btn sec" id="rc">Export CSV</button></div>
     <div id="ro" style="padding:18px"><div class="empty">Choose Area or Branch, then click Generate.</div></div></div>
   </section>
   <section id="v-set" class="hide">
@@ -177,6 +197,7 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
    <div><label>Page background</label><input type="color" id="b10" style="height:38px;padding:3px"></div><div><label>Text and heading color</label><input type="color" id="b11" style="height:38px;padding:3px"></div>
    <div><label>Login screen color</label><input type="color" id="b12" style="height:38px;padding:3px"></div><div><label>Printout header and section color</label><input type="color" id="b13" style="height:38px;padding:3px"></div>
    <div><label>Density</label><select id="b5"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></div><div><label>Corners</label><select id="b6"><option value="rounded">Rounded</option><option value="square">Square</option></select></div>
+   <div><label>Menu position (desktop)</label><select id="b14"><option value="side">Side menu</option><option value="top">Top menu</option></select></div>
    <div><label>Print paper size</label><select id="b7"><option>A4</option><option>Letter</option><option>Legal</option></select></div><div><label>Print footer note</label><input id="b8" placeholder="e.g. Confidential - for internal use only"></div></div>
    <div class="acts"><button class="btn" id="bs2">Save appearance</button></div></div>
    <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Messaging</h3><div style="color:var(--mute);margin:4px 0 8px">Email works through your Google account (about 100 recipients per day on a free account). SMS can always be opened in the phone's Messages app. To send SMS directly from the system, connect a Philippine SMS gateway (Semaphore). It is paid per message.</div>
@@ -201,6 +222,7 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
      <div><label>Role</label><select id="u3"><option>User</option><option>Approver</option><option>ISD</option><option>Dept</option><option>Reviewer</option><option>Viewer</option><option>Admin</option></select></div>
      <div><label>Password (blank = keep)</label><input id="u4" type="password"></div>
      <div><label>Visible branches / offices (Ctrl+click for several)</label><select id="u6" multiple size="7"></select></div><div><label>Department (for Dept role)</label><select id="u7"></select></div>
+     <div><label>Email (for follow-up notifications)</label><input id="u8" type="email"></div>
      <div><label><input type="checkbox" id="u5" checked style="width:auto"> Active</label></div>
      <div style="text-align:right"><button class="btn" id="us">Save user</button></div></form></div>
   </section>
@@ -233,7 +255,7 @@ function applyBrand(d){const nm=d.Company||"",u=d.UI||{};BR={name:nm,logo:d.Logo
   const root=document.documentElement.style,set=(k,v)=>v?root.setProperty(k,v):root.removeProperty(k),b=document.body.classList;
   set("--teal",u.accent);set("--ink",u.ink);set("--pg",u.pagebg);set("--hero",u.hero);set("--prc",u.prc);
   const sb=u.sbbg||(u.sidebar==="light"?"#ffffff":"#10243a");root.setProperty("--sb",sb);
-  const n=parseInt(sb.slice(1),16);b.toggle("sb-light",((n>>16&255)*.299+(n>>8&255)*.587+(n&255)*.114)/255>.6);b.toggle("compact",u.density==="compact");b.toggle("square",u.corners==="square")}
+  const n=parseInt(sb.slice(1),16);b.toggle("sb-light",((n>>16&255)*.299+(n>>8&255)*.587+(n&255)*.114)/255>.6);b.toggle("compact",u.density==="compact");b.toggle("square",u.corners==="square");b.toggle("nav-top",u.nav==="top");$("mbn").textContent=nm||"IS PROJECTS"}
 function applyLogin(d){const L=d.Login||{},nm=d.Company||"",lay=L.layout||"split",el=$("login"),img=d.LoginImg;
   el.className="lay-"+lay+(el.classList.contains("hide")?" hide":"");
   $("lh").textContent=L.title||nm||"IS PROJECTS";$("ls").textContent=L.sub||"Record requests, collect sign-offs, and track every monitoring to completion.";
@@ -244,12 +266,13 @@ function applyLogin(d){const L=d.Login||{},nm=d.Company||"",lay=L.layout||"split
   document.querySelector(".hero").style.backgroundImage=img&&(lay==="split"||lay==="splitr")?`linear-gradient(rgba(11,29,49,.68),rgba(11,29,49,.68)),url('${img}')`:""}
 if(API_URL)api("brand").then(d=>{applyBrand(d);applyLogin(d)}).catch(()=>{});
 $("lb").onclick=doLogin;$("lp").onkeydown=e=>{if(e.key==="Enter")doLogin()};
-function forceOut(q){S.token=S.user=null;saveTok(null);HOME=null;V="home";$("app").classList.add("hide");$("login").classList.remove("hide");$("login").style.visibility="";$("lp").value="";if(!q)toast("Session expired. Please sign in again.")}
+function forceOut(q){document.body.classList.remove("drawer");S.token=S.user=null;saveTok(null);HOME=null;V="home";$("app").classList.add("hide");$("login").classList.remove("hide");$("login").style.visibility="";$("lp").value="";if(!q)toast("Session expired. Please sign in again.")}
 $("lo").onclick=()=>forceOut(true);
 async function start(){const u=S.user;$("login").classList.add("hide");$("app").classList.remove("hide");
   $("un").textContent=u.name;$("ur").textContent=u.role+(u.dept?" - "+u.dept:"")+(u.role!=="Admin"&&u.branch?" - "+(u.branch.length>26?u.branch.slice(0,26)+"...":u.branch):"");
-  $("navset").classList.toggle("hide",u.role!=="Admin");$("navset").previousElementSibling.classList.toggle("hide",u.role!=="Admin");$("nb").classList.toggle("hide",!["Admin","ISD","User"].includes(u.role));view("home");await load()}
-document.querySelector("aside").onclick=e=>{const a=e.target.closest("a");if(!a)return;if(a.dataset.m)S.mon=a.dataset.m;view(a.dataset.v)};
+  $("navset").classList.toggle("hide",u.role!=="Admin");$("navset").previousElementSibling.classList.toggle("hide",u.role!=="Admin");$("nb").classList.toggle("hide",!["Admin","ISD","User"].includes(u.role));view("home");await load();poll();if(!window.PT)window.PT=setInterval(poll,90000)}
+document.querySelector("aside").onclick=e=>{const a=e.target.closest("a");if(!a)return;document.body.classList.remove("drawer");if(a.id==="so")return forceOut(true);if(a.dataset.m)S.mon=a.dataset.m;view(a.dataset.v)};
+$("mbtn").onclick=()=>document.body.classList.toggle("drawer");$("dov").onclick=()=>document.body.classList.remove("drawer");$("lo2").onclick=()=>forceOut(true);$("bell").onclick=$("bell2").onclick=openAlerts;
 function mark(){document.querySelectorAll("aside a").forEach(a=>a.classList.toggle("on",a.dataset.v===V&&(V!=="isrf"||a.dataset.m===S.mon)));
   $("vt").textContent=V==="isrf"?mon(S.mon).name:{home:"Home",rep:"Reports",set:"Setup and users"}[V];$("nb").textContent="New "+(S.mon||"")}
 function nav(){$("mons").innerHTML=S.cfg.Monitor.map(m=>`<a data-v="isrf" data-m="${esc(m.code)}"><b>${esc(m.code)}</b>${esc(m.name)}</a>`).join("");mark()}
@@ -260,6 +283,8 @@ const opts=a=>a.map(x=>`<option>${esc(x)}</option>`).join("");
 const DEF=[{l:"Error type",t:"select",src:"err",c:"ErrorType",r:1},{l:"Documents damaged",t:"text",c:"DocsDamage"},{l:"Problem details",t:"textarea",c:"ProblemDetails",r:1}];
 const fieldsOf=c=>(S.cfg.Fields&&S.cfg.Fields[c])||DEF;
 const dat=r=>{try{return JSON.parse(r.Data||"{}")}catch(e){return{}}},fv=(r,f)=>f.c?r[f.c]:dat(r)[f.l];
+const deptNotes=r=>{const N=notes(r);return Object.keys(N).filter(k=>k!=="ISD"&&N[k].sig).map(k=>{const s=fmt(N[k].sig);return k+" ("+s.n+", "+s.t+"): "+(N[k].text||"-")}).join("\n")};
+const ansOf=r=>{const s=fmt(r.AnsweredBy),N=notes(r);return{by:s?s.n:"",at:s?s.t:"",txt:(N.ISD&&N.ISD.text)||""}};
 const summary=r=>fieldsOf(r.Monitoring).map(f=>f.l+": "+(fv(r,f)||"-")).join("; "),sumShort=r=>fieldsOf(r.Monitoring).filter(f=>f.t!=="textarea").slice(0,2).map(f=>f.l+": "+(fv(r,f)||"-")).join(", ");
 const allowed=()=>{const t=(S.user.branch||"").split(",").map(x=>x.trim()).filter(Boolean);return S.user.role==="Admin"||t.includes("*")?bn():S.cfg.Branch.filter(b=>t.includes(b.name)||t.includes("@"+b.area)).map(b=>b.name)};
 const mon=c=>S.cfg.Monitor.find(m=>m.code===c)||{code:c,name:c||"ISRF"},errs=()=>S.cfg.ErrorType.filter(e=>!e.mon||e.mon===S.mon).map(e=>e.name);
@@ -304,7 +329,7 @@ function detail(id){
   let flow=box("Requested by",r.RequestedBy)+box("Approved by (branch)",r.ApprovedBy)
    +fw.map(d=>box("Noted by "+d,N[d]&&N[d].sig)).join("")+box("Answered by (ISD)",r.AnsweredBy)+box("Reviewed by",r.ReviewedBy);
   const nl=Object.keys(N).map(k=>`<div style="margin-top:8px"><b>${esc(k)} remarks</b> <small style="color:var(--mute)">${esc((fmt(N[k].sig)||{}).n||"")}</small><div style="white-space:pre-wrap">${esc(N[k].text)||"-"}</div></div>`).join("");
-  const SE=S.cfg.Settings,up=ro!=="Viewer"&&(open||adm)?`<input type="file" id="fu" multiple accept=".pdf,.jpg,.jpeg,.png" style="margin-top:8px"><small style="color:var(--mute);display:block">PDF, JPG or PNG. Max ${SE.MaxFileMB} MB each, ${SE.MaxFiles} files per request. Photos are compressed automatically.</small>`:"";
+  const locked=!!(r.AnsweredBy||r.ReviewedBy||r.Status==="Rejected"),SE=S.cfg.Settings,up=ro!=="Viewer"&&(open||adm)?`<input type="file" id="fu" multiple accept=".pdf,.jpg,.jpeg,.png" style="margin-top:8px"><small style="color:var(--mute);display:block">PDF, JPG or PNG. Max ${SE.MaxFileMB} MB each, ${SE.MaxFiles} files per request. Photos are compressed automatically.</small>`:"";
   let act="";
   if(open&&!r.Decision&&isd)act+=`<h3 style="margin-top:16px">ISD decision</h3><select id="dd"><option value="Execute">For execution</option><option value="Forward">Forward to departments for notes</option></select>
    <div id="dp" class="hide" style="margin-top:8px">${r.ApprovedBy?S.cfg.Dept.map(d=>`<label style="font-weight:400"><input type="checkbox" class="dc" value="${esc(d)}" style="width:auto"> ${esc(d)}</label>`).join(""):`<div class="demo">Forwarding needs branch approval first.</div>`}</div>
@@ -313,14 +338,14 @@ function detail(id){
   if(open&&isd&&st==="For Execution")act+=`<h3 style="margin-top:16px">Execution</h3><textarea id="ex" rows="3" placeholder="ISD remarks (optional)"></textarea><div class="acts"><button class="btn" id="eg">Mark executed and sign</button></div>`;
   modal(`<div style="display:flex;justify-content:space-between;gap:10px"><div><h2>${esc(r.ID)}</h2><div style="color:var(--mute)">${esc(mon(r.Monitoring).name)} - ${esc(r.Date)} - ${esc(r.Area)} / ${esc(r.Branch)}</div></div><span class="badge ${cls(st)}" style="align-self:flex-start">${esc(st)}</span></div>
   <dl class="kv">${fieldsOf(r.Monitoring).map(f=>`<dt>${esc(f.l)}</dt><dd style="white-space:pre-wrap">${esc(fv(r,f))||"-"}</dd>`).join("")}</dl>
-  <h3>Sign-offs</h3><div class="flow">${flow}</div>${nl}${act}<h3 style="margin-top:16px">Attachments</h3><div id="fl">Loading...</div>${up}
+  <h3>Sign-offs</h3><div class="flow">${flow}</div>${nl}${act}<h3 style="margin-top:16px">Attachments</h3><div id="fl">Loading...</div>${up}<h3 style="margin-top:16px">Follow-ups and messages</h3><div id="ml">Loading...</div>${ro!=="Viewer"?`<textarea id="mt" rows="2" placeholder="Write a message or question about this request" style="margin-top:8px"></textarea><div class="acts2"><button class="btn sec" id="mfu" type="button">Ask for progress update</button><button class="btn" id="msd" type="button">Send message</button></div>`:""}
   <div class="acts" style="border-top:1px solid var(--line);padding-top:14px"><button class="btn sec" onclick="closeM()">Close</button><button class="btn sec" id="pr">Print</button><button class="btn sec" id="sn">Send</button>
-  ${isd?`<button class="btn sec" id="ed">Edit</button><button class="btn red" id="dl">Delete</button>`:""}
-  ${open&&(isd||ro==="Approver")?`<button class="btn sec" id="rj">Reject</button>`:""}
+  ${isd&&!locked?`<button class="btn sec" id="ed">Edit</button>`:""}${isd&&st==="Pending Branch Approval"?`<button class="btn red" id="dl">Delete</button>`:""}${adm&&locked?`<button class="btn sec" id="rt">Return...</button>`:""}
+  ${open&&!r.AnsweredBy&&(isd||ro==="Approver")?`<button class="btn sec" id="rj">Reject</button>`:""}
   ${open&&!r.ApprovedBy&&(adm||ro==="Approver")?`<button class="btn" id="ap">Approve (branch)</button>`:""}
   ${open&&(adm||ro==="Reviewer")&&st==="For Review"?`<button class="btn" id="rv">Review and complete</button>`:""}</div>`);
   const act2=(t,d,m)=>run("act",{id,type:t,data:d},m),on=(i,f)=>$(i)&&($(i).onclick=f);
-  on("pr",()=>printReq(r,adm&&!!r.ReviewedBy&&confirm("Include the Reviewed by sign-off on this printout?\nOK = include it, Cancel = leave it out.")));on("sn",()=>sendReq(r));loadFiles(r);setupUp(r);on("ap",()=>act2("approve",{},"Approved"));on("rv",()=>act2("review",{},"Completed"));on("rj",()=>confirm("Reject this ISRF?")&&act2("reject",{},"Rejected"));
+  on("pr",()=>printReq(r,adm&&!!r.ReviewedBy&&confirm("Include the Reviewed by sign-off on this printout?\nOK = include it, Cancel = leave it out.")));on("sn",()=>sendReq(r));loadFiles(r);setupUp(r);loadMsgs(r);on("rt",()=>returnReq(r));const post=async k=>{try{const n=await api("msg",{id:r.ID,text:$("mt").value,kind:k,link:location.href.split("#")[0]});$("mt").value="";toast(n?"Sent. "+n+" person(s) emailed.":"Added to the request");loadMsgs(r);poll()}catch(e){toast(e.message)}};on("mfu",()=>post("followup"));on("msd",()=>post("message"));on("ap",()=>act2("approve",{},"Approved"));on("rv",()=>act2("review",{},"Completed"));on("rj",()=>confirm("Reject this ISRF?")&&act2("reject",{},"Rejected"));
   on("ed",()=>form(r));on("dl",()=>confirm("Delete "+id+" permanently?")&&run("delete",{id},"Deleted"));
   on("eg",()=>act2("answer",{text:$("ex").value},"Executed"));
   if($("dd"))$("dd").onchange=()=>$("dp").classList.toggle("hide",$("dd").value!=="Forward");
@@ -339,6 +364,23 @@ function sendReq(r){const st=status(r),m=mon(r.Monitoring);let last={};try{last=
   $("qe").onclick=async()=>{rem();$("qe").disabled=true;try{const n=await api("email",{id:r.ID,to:$("q1").value,message:$("q3").value,attach:$("q4").checked,incReview:!!($("q5")&&$("q5").checked)});closeM();toast("Email sent to "+n+" recipient(s)")}catch(e){toast(e.message);$("qe").disabled=false}};
   $("qs").onclick=()=>{rem();const n=$("q2").value.replace(/[^\d+,;]/g,"").replace(/;/g,",");if(!n)return toast("Enter a mobile number");location.href="sms:"+n+"?&body="+encodeURIComponent(txt())};
   if($("qg"))$("qg").onclick=async()=>{rem();try{const n=await api("sms",{id:r.ID,to:$("q2").value,message:txt()});closeM();toast("SMS sent to "+n+" number(s)")}catch(e){toast(e.message)}}}
+/* ---- messages, follow-ups, return, alerts ---- */
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},seenKey=()=>"isrf_seen_"+(S.user&&S.user.username);
+const fAt=t=>{const d=new Date(t);return isNaN(d)?"":d.toLocaleDateString("en-GB")+" "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})};
+let INBOX=[];
+async function poll(){if(!S.token)return;try{INBOX=await api("inbox");const seen=Number(lsGet(seenKey())||0),n=INBOX.filter(m=>new Date(m.At).getTime()>seen).length;
+  ["bd","bd2"].forEach(i=>{$(i).textContent=n;$(i).classList.toggle("hide",!n)});if(V==="home"&&$("v-home").innerHTML)renderHome()}catch(e){}}
+function openAlerts(){document.body.classList.remove("drawer");view("home");setTimeout(()=>{lsSet(seenKey(),Date.now());["bd","bd2"].forEach(i=>$(i).classList.add("hide"))},2500)}
+async function loadMsgs(r){const el=$("ml");if(!el)return;
+  try{const m=await api("msgs",{id:r.ID});el.innerHTML=m.map(x=>`<div class="ms"><b>${esc(x.By)}</b> <small>${esc(x.Role)} - ${esc(fAt(x.At))}</small>${x.Kind==="followup"?' <span class="badge">Follow-up</span>':x.Kind==="return"?' <span class="badge Rejected">Returned</span>':""}<div style="white-space:pre-wrap">${esc(x.Text)}</div></div>`).join("")||'<div class="bm">No messages yet.</div>'}catch(e){el.textContent=e.message}}
+function returnReq(r){const fw=(r.ForwardTo||"").split(",").filter(Boolean);
+  modal(`<h2>Return ${esc(r.ID)}</h2><div style="color:var(--mute)">Send this request back to an earlier step. Signatures after that step are cleared.</div>
+  <label>Return to</label><select id="rr1"><option value="notation">For notation (departments)</option><option value="approval">For approval again</option><option value="execution">For execution</option></select>
+  <div id="rr2" style="margin-top:8px">${S.cfg.Dept.map(d=>`<label style="font-weight:400"><input type="checkbox" class="rd" value="${esc(d)}" ${fw.includes(d)?"checked":""} style="width:auto"> ${esc(d)}</label>`).join("")}</div>
+  <label>Reason (saved in the request messages)</label><textarea id="rr3" rows="3"></textarea>
+  <div class="acts"><button class="btn sec" onclick="closeM()">Cancel</button><button class="btn" id="rrg">Return request</button></div>`);
+  $("rr1").onchange=()=>$("rr2").classList.toggle("hide",$("rr1").value!=="notation");
+  $("rrg").onclick=()=>run("return",{id:r.ID,data:{to:$("rr1").value,depts:[...document.querySelectorAll(".rd:checked")].map(x=>x.value),reason:$("rr3").value}},"Request returned")}
 /* ---- attachments ---- */
 const fsz=n=>n>1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB";
 const b64=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result.split(",")[1]);x.readAsDataURL(f)});
@@ -361,10 +403,11 @@ $("rb").onclick=()=>{const g=$("rg").value,n=$("rn").value,f=$("rf").value,t=$("
   <div class="tw"><table><thead><tr><th>${g}</th><th>Total</th><th>Awaiting approval / ISD</th><th>With departments</th><th>For execution / review</th><th>Completed</th><th>Rejected</th></tr></thead><tbody>
   ${Object.keys(grp).sort().map(k=>{const a=grp[k];return`<tr><td><b>${esc(k)}</b></td><td>${a.length}</td><td>${c(a,"Pending Branch","For ISD")}</td><td>${c(a,"Pending Note")}</td><td>${c(a,"For Execution","For Review")}</td><td>${c(a,"Completed")}</td><td>${c(a,"Rejected")}</td></tr>`}).join("")||'<tr><td colspan="7" class="empty">No records</td></tr>'}</tbody></table></div>
   <h3 style="margin:18px 0 6px">By error type</h3><div>${Object.entries(err).map(([k,v])=>`<span class="badge" style="margin-right:6px">${esc(k)}: ${v}</span>`).join("")||"-"}</div>
-  <h3 style="margin:18px 0 6px">Details</h3><div class="tw"><table><thead><tr><th>ID</th><th>Monitoring</th><th>Date</th><th>Area</th><th>Branch</th><th>Details</th><th>Status</th></tr></thead><tbody>
-  ${REP.map(r=>`<tr><td>${esc(r.ID)}</td><td>${esc(r.Monitoring)}</td><td>${esc(r.Date)}</td><td>${esc(r.Area)}</td><td>${esc(r.Branch)}</td><td style="white-space:normal">${esc(summary(r))}</td><td>${esc(r.st)}</td></tr>`).join("")}</tbody></table></div>`};
+  <h3 style="margin:18px 0 6px">Details</h3><div class="tw"><table><thead><tr><th>ID</th><th>Monitoring</th><th>Date</th><th>Area</th><th>Branch</th><th>Details</th><th>Dept notes</th><th>Answered by</th><th>Answered on</th><th>ISD answer</th><th>Status</th></tr></thead><tbody>
+  ${REP.map(r=>`<tr><td>${esc(r.ID)}</td><td>${esc(r.Monitoring)}</td><td>${esc(r.Date)}</td><td>${esc(r.Area)}</td><td>${esc(r.Branch)}</td><td>${esc(summary(r))}</td><td class="nl">${esc(deptNotes(r))||"-"}</td><td>${esc(ansOf(r).by)||"-"}</td><td>${esc(ansOf(r).at)||"-"}</td><td class="nl">${esc(ansOf(r).txt)||"-"}</td><td>${esc(r.st)}</td></tr>`).join("")}</tbody></table></div>`};
+$("rp").onclick=()=>{if(!REP.length)return toast("Generate a report first");$("pgs").textContent=`@page{size:${(BR.ui||{}).paper||"A4"} landscape;margin:10mm}`;setTimeout(()=>print(),100)};
 $("rc").onclick=()=>{if(!REP.length)return toast("Generate a report first");const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
-  const csv=[["ID","Monitoring","Date","Area","Branch","Details","Status"].join(",")].concat(REP.map(r=>[r.ID,r.Monitoring,r.Date,r.Area,r.Branch,summary(r),r.st].map(q).join(","))).join("\n");
+  const csv=[["ID","Monitoring","Date","Area","Branch","Details","Dept notes","Answered by","Answered on","ISD answer","Status"].join(",")].concat(REP.map(r=>[r.ID,r.Monitoring,r.Date,r.Area,r.Branch,summary(r),deptNotes(r),ansOf(r).by,ansOf(r).at,ansOf(r).txt,r.st].map(q).join(","))).join("\n");
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="ISRF-report.csv";a.click()};
 /* ---- print one request ---- */
 async function printReq(r,incRev){
@@ -394,8 +437,9 @@ async function renderHome(){
   const h=HOME.home||{},im=HOME.images||{},u=S.user,rs=S.rows.map(r=>({...r,st:status(r)}));
   const need=r=>{const s=r.st,ro=u.role;return ro==="Approver"?s==="Pending Branch Approval":ro==="ISD"?(s==="For ISD Decision"||s==="For Execution"):ro==="Dept"?(s.startsWith("Pending Note")&&s.includes(u.dept)):ro==="Reviewer"?s==="For Review":false};
   const closed=s=>s==="Completed"||s==="Rejected",latest=[...rs].reverse().slice(0,6);
-  const today=new Date().toISOString().slice(0,10),mine=rs.filter(need).slice(0,6),safe=x=>/^https?:\/\//i.test(x||"")?x:"";
+  const seen=Number(lsGet(seenKey())||0),today=new Date().toISOString().slice(0,10),mine=rs.filter(need).slice(0,6),safe=x=>/^https?:\/\//i.test(x||"")?x:"";
   const side=`<div class="blk"><h3>Needs your action</h3>${mine.length?mine.map(r=>`<div class="bi" data-id="${esc(r.ID)}"><b>${esc(r.ID)}</b><span>${esc(r.Branch)} - ${esc(r.st)}</span></div>`).join(""):'<div class="bm">Nothing is waiting for you.</div>'}</div>`
+   +(INBOX.length?`<div class="blk"><h3>Follow-ups and messages</h3>${INBOX.slice(0,6).map(m=>`<div class="bi" data-id="${esc(m.RecordID)}"><b>${esc(m.RecordID)}${new Date(m.At).getTime()>seen?' <span class="badge">New</span>':""}</b><span>${esc(m.By)}${m.Kind==="followup"?" asked for a progress update":": "+esc(String(m.Text).slice(0,70))}</span></div>`).join("")}</div>`:"")
    +(h.ads||[]).filter(a=>!a.e||a.e>=today).map(a=>`<div class="blk ad">${im["ad:"+a.id]?`<div class="adi" style="background-image:url('${im["ad:"+a.id]}')"></div>`:""}<div class="adb"><small>${esc(a.g||"Announcement")}</small><b style="display:block">${esc(a.t)}</b><p>${esc(a.x)}</p>${safe(a.u)?`<a href="${esc(safe(a.u))}" target="_blank" rel="noopener">Learn more</a>`:""}</div></div>`).join("")
    +((h.links||[]).some(l=>safe(l.u))?`<div class="blk"><h3>Quick links</h3>${h.links.filter(l=>safe(l.u)).map(l=>`<a class="bl" href="${esc(safe(l.u))}" target="_blank" rel="noopener">${esc(l.l)}</a>`).join("")}</div>`:"")
    +(h.help?`<div class="blk"><h3>Help desk</h3><div class="bm" style="white-space:pre-wrap">${esc(h.help)}</div></div>`:"");
@@ -447,7 +491,7 @@ async function loadSet(){const c=S.cfg;fillBrand();fillFields();fillHome();fillL
   $("u6").innerHTML='<option value="*">All branches and offices</option>'+areas().map(a=>`<option value="@${esc(a)}">Whole area: ${esc(a)}</option>`).join("")+S.cfg.Branch.map(b=>`<option value="${esc(b.name)}">${esc(b.name)}</option>`).join("");$("u7").innerHTML='<option value="">(none)</option>'+opts(c.Dept);
   try{const u=await api("listUsers");S.users=u;$("ut").innerHTML=u.map((x,i)=>`<tr class="r" data-i="${i}"><td>${esc(x.username)}</td><td>${esc(x.name)}</td><td>${x.role}</td><td>${esc(x.branch)}</td><td>${esc(x.dept)}</td><td>${x.active?"Yes":"No"}</td></tr>`).join("")}catch(e){toast(e.message)}
   document.querySelectorAll("#ut tr.r").forEach(t=>t.onclick=()=>{const x=S.users[t.dataset.i],tk=String(x.branch||"").split(",").map(y=>y.trim());
-    $("u1").value=x.username;$("u2").value=x.name;$("u3").value=x.role;$("u5").checked=x.active;$("u7").value=x.dept||"";$("u4").value="";
+    $("u1").value=x.username;$("u2").value=x.name;$("u3").value=x.role;$("u5").checked=x.active;$("u7").value=x.dept||"";$("u8").value=x.email||"";$("u4").value="";
     [...$("u6").options].forEach(o=>o.selected=tk.includes(o.value));$("uf").scrollIntoView({behavior:"smooth"})});
   try{const g=await api("storage"),s=g.set,pc=Math.min(100,Math.round(g.used/1048576/s.CapMB*100));
    $("sti").innerHTML=`<div class="meter"><i style="width:${pc}%"></i></div><div style="margin-top:6px"><b>${fsz(g.used)}</b> used of ${s.CapMB} MB cap (${pc}%) - ${g.count} files - ${g.mailQuota} emails left today${s.RetainDays?` - ${g.eligible} eligible for cleanup`:""}</div>
@@ -457,21 +501,21 @@ $("ss").onclick=async()=>{try{await api("saveSettings",{data:{MaxFileMB:$("s1").
 $("sx").onclick=async()=>{if(!confirm("Move attachments of old completed requests to the Drive trash?"))return;try{const d=await api("cleanup");toast("Removed "+d.n+" files ("+fsz(d.bytes)+")");loadSet()}catch(e){toast(e.message)}};
 let LOGO;
 const logoOf=f=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const k=Math.min(1,240/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);let d=c.toDataURL("image/png");if(d.length>45000)d=c.toDataURL("image/jpeg",.8);d.length>45000?rej(new Error("Logo is too detailed. Use a simpler or smaller image.")):res(d)};im.onerror=()=>rej(new Error("Cannot read this image"));im.src=URL.createObjectURL(f)});
-function fillBrand(){const b=S.cfg,u=b.UI||{};$("b1").value=b.Company||"";$("b3").value=u.accent||"#0f766e";$("b4").value=u.sbbg||(u.sidebar==="light"?"#ffffff":"#10243a");$("b10").value=u.pagebg||"#eef2f7";$("b11").value=u.ink||"#10243a";$("b12").value=u.hero||"#0b1d31";$("b13").value=u.prc||"#10243a";$("b5").value=u.density||"comfortable";$("b6").value=u.corners||"rounded";$("b7").value=u.paper||"A4";$("b8").value=u.footer||"";LOGO=undefined;
+function fillBrand(){const b=S.cfg,u=b.UI||{};$("b1").value=b.Company||"";$("b3").value=u.accent||"#0f766e";$("b4").value=u.sbbg||(u.sidebar==="light"?"#ffffff":"#10243a");$("b10").value=u.pagebg||"#eef2f7";$("b11").value=u.ink||"#10243a";$("b12").value=u.hero||"#0b1d31";$("b13").value=u.prc||"#10243a";$("b5").value=u.density||"comfortable";$("b14").value=u.nav||"side";$("b6").value=u.corners||"rounded";$("b7").value=u.paper||"A4";$("b8").value=u.footer||"";LOGO=undefined;
   $("b9").innerHTML=b.Logo?`<img src="${b.Logo}" style="height:40px">`:"No logo";$("mst").textContent=b.SmsOn?"SMS gateway is connected.":"SMS gateway not connected. Users can still open SMS in their phone's Messages app."}
 const PZ={"Ocean":["#0f766e","#10243a","#eef2f7","#10243a","#0b1d31","#10243a"],"Forest":["#15803d","#14352a","#eef4ef","#14352a","#0f2a20","#14352a"],"Burgundy":["#9f1239","#3b0f1e","#f7eef0","#3b0f1e","#2d0b17","#3b0f1e"],"Navy":["#1d4ed8","#0f1f4a","#eef2fb","#0f1f4a","#0b1638","#0f1f4a"],"Slate":["#475569","#1e293b","#f1f5f9","#1e293b","#0f172a","#1e293b"],"Light":["#0f766e","#ffffff","#f3f6f9","#10243a","#0b1d31","#10243a"]};
 $("pz").innerHTML=Object.keys(PZ).map(k=>`<button class="btn sec sm" type="button" data-p="${k}"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${PZ[k][0]};margin-right:6px"></span>${k}</button>`).join("");
 $("pz").onclick=e=>{const k=e.target.closest("[data-p]");if(!k)return;PZ[k.dataset.p].forEach((v,i)=>$(["b3","b4","b10","b11","b12","b13"][i]).value=v)};
 $("b2").onchange=async()=>{const f=$("b2").files[0];if(!f)return;try{LOGO=await logoOf(f);$("b9").innerHTML=`<img src="${LOGO}" style="height:40px">`}catch(e){toast(e.message)}};
 $("bx").onclick=()=>{LOGO="";$("b9").textContent="No logo"};
-$("bs2").onclick=async()=>{const d={company:$("b1").value.trim(),ui:{accent:$("b3").value,sbbg:$("b4").value,pagebg:$("b10").value,ink:$("b11").value,hero:$("b12").value,prc:$("b13").value,density:$("b5").value,corners:$("b6").value,paper:$("b7").value,footer:$("b8").value.trim()}};if(LOGO!==undefined)d.logo=LOGO;
+$("bs2").onclick=async()=>{const d={company:$("b1").value.trim(),ui:{accent:$("b3").value,sbbg:$("b4").value,pagebg:$("b10").value,ink:$("b11").value,hero:$("b12").value,prc:$("b13").value,density:$("b5").value,corners:$("b6").value,nav:$("b14").value,paper:$("b7").value,footer:$("b8").value.trim()}};if(LOGO!==undefined)d.logo=LOGO;
   try{await api("saveBrand",{data:d});toast("Appearance saved");await load();fillBrand()}catch(e){toast(e.message)}};
 $("ms").onclick=async()=>{try{await api("saveSms",{key:$("m1").value,sender:$("m2").value});$("m1").value="";toast("Messaging saved");await load();fillBrand()}catch(e){toast(e.message)}};
 $("mx").onclick=async()=>{try{await api("saveSms",{clear:true});toast("Gateway disconnected");await load();fillBrand()}catch(e){toast(e.message)}};
 const lines=v=>v.split("\n").map(s=>s.trim()).filter(Boolean);
 $("sc").onclick=async()=>{const Branch=lines($("sb").value).map(l=>{const p=l.split("|").map(x=>x.trim());return p.length>1?{area:p[0],name:p[1]}:{area:"",name:p[0]}});
   try{await api("saveConfig",{data:{Branch,ErrorType:lines($("se").value).map(l=>{const p=l.split("|").map(x=>x.trim());return p.length>1?{mon:p[0].toUpperCase(),name:p[1]}:{mon:"",name:p[0]}}),Dept:lines($("sd").value),Fields:readFields(),Monitor:lines($("sm").value).map(l=>{const p=l.split("|").map(x=>x.trim()),code=p[0].toUpperCase().replace(/[^A-Z0-9]/g,"");return{code,name:p[1]||code}}).filter(m=>m.code)}});toast("Lists saved");load()}catch(e){toast(e.message)}};
-$("us").onclick=async()=>{const d={username:$("u1").value.trim(),name:$("u2").value.trim(),role:$("u3").value,password:$("u4").value,active:$("u5").checked,branch:[...$("u6").selectedOptions].map(o=>o.value).join(","),dept:$("u7").value};
+$("us").onclick=async()=>{const d={username:$("u1").value.trim(),name:$("u2").value.trim(),role:$("u3").value,password:$("u4").value,active:$("u5").checked,branch:[...$("u6").selectedOptions].map(o=>o.value).join(","),dept:$("u7").value,email:$("u8").value.trim()};
   if(!d.username||!d.name)return toast("Username and full name are required");
   try{await api("saveUser",{data:d});toast("User saved");$("u4").value="";loadSet()}catch(e){toast(e.message)}};
 (async()=>{const t=getTok();if(!API_URL||!t)return;$("login").style.visibility="hidden";S.token=t;
