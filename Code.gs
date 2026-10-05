@@ -1,14 +1,14 @@
 /* IS PROJECTS - ISRF backend v2. After pasting: run repair() once, then Deploy > Manage deployments > New version. Login: admin / admin123 */
 const SS = SpreadsheetApp.getActiveSpreadsheet();
 const H = ['ID','Date','Area','Branch','ErrorType','DocsDamage','ProblemDetails','RequestedBy','ApprovedBy','Decision','ForwardTo','Notes','AnsweredBy','ReviewedBy','Status','CreatedBy','Monitoring','Data'];
-const UH = ['Username','Name','Role','Hash','Active','Branch','Dept'], CH = ['Type','Value','Area'];
+const UH = ['Username','Name','Role','Hash','Active','Branch','Dept','Email'], CH = ['Type','Value','Area'];
 
 function sh(n, h) { if (!n || !h) throw new Error('Do not run sh() directly.'); let s = SS.getSheetByName(n); if (!s) { s = SS.insertSheet(n); s.appendRow(h); s.setFrozenRows(1); } return s; }
 function hash(p) { return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'isrf:' + p).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join(''); }
 function setup() {
   sh('ISRF', H).getRange('B:B').setNumberFormat('@');
   const u = sh('Users', UH); u.getRange('A:D').setNumberFormat('@');
-  if (u.getLastRow() < 2) u.appendRow(['admin','Administrator','Admin',hash('admin123'),true,'','']);
+  if (u.getLastRow() < 2) u.appendRow(['admin','Administrator','Admin',hash('admin123'),true,'','','']);
   const c = sh('Config', CH);
   if (c.getLastRow() < 2) {
     [['Area 1','Main Branch'],['Area 1','North Branch'],['Area 2','South Branch']].forEach(b => c.appendRow(['Branch', b[1], b[0]]));
@@ -19,8 +19,8 @@ function setup() {
 }
 function resetAdmin() {
   setup(); const u = SS.getSheetByName('Users'), ex = rows('Users').find(x => String(x.Username).toLowerCase() === 'admin');
-  const row = ['admin','Administrator','Admin',hash('admin123'),true,'',''];
-  if (ex) u.getRange(ex._row, 1, 1, 7).setValues([row]); else u.appendRow(row);
+  const row = ['admin','Administrator','Admin',hash('admin123'),true,'','',''];
+  if (ex) u.getRange(ex._row, 1, 1, 8).setValues([row]); else u.appendRow(row);
 }
 /* Rebuilds any tab whose header row is outdated (that tab is cleared), then resets admin */
 function repair() {
@@ -32,16 +32,17 @@ function repair() {
   setup(); resetAdmin(); Logger.log('Repair done');
 }
 /* Adds the Monitoring column to an existing ISRF tab without losing data */
-function upgrade() {
-  const s = SS.getSheetByName('ISRF'); if (!s) return;
-  const cur = s.getRange(1, 1, 1, H.length).getValues()[0].map(String);
-  for (let i = 0; i < H.length; i++) {
-    if (cur[i] === H[i]) continue;
+function upg(name, hdr) {
+  const s = SS.getSheetByName(name); if (!s) return;
+  const cur = s.getRange(1, 1, 1, hdr.length).getValues()[0].map(String);
+  for (let i = 0; i < hdr.length; i++) {
+    if (cur[i] === hdr[i]) continue;
     if (cur[i] !== '') return;
-    s.getRange(1, i + 1).setValue(H[i]);
-    if (H[i] === 'Monitoring' && s.getLastRow() > 1) s.getRange(2, i + 1, s.getLastRow() - 1, 1).setValue('ISRF');
+    s.getRange(1, i + 1).setValue(hdr[i]);
+    if (name === 'ISRF' && hdr[i] === 'Monitoring' && s.getLastRow() > 1) s.getRange(2, i + 1, s.getLastRow() - 1, 1).setValue('ISRF');
   }
 }
+function upgrade() { upg('ISRF', H); upg('Users', UH); }
 function authorize() { DriveApp.getRootFolder(); MailApp.getRemainingDailyQuota(); LockService.getScriptLock().tryLock(1000); LockService.getScriptLock().releaseLock(); CacheService.getScriptCache().put('t', '1', 10); Logger.log('Authorized OK'); }
 function testLogin() { Logger.log(JSON.stringify(handle({action:'login', username:'admin', password:'admin123'}))); }
 
@@ -159,9 +160,31 @@ function mailHtml(rec, msg, cf, s, incRev) {
   return '<div style="font-family:Arial,sans-serif;max-width:640px;color:#10243a"><h2 style="margin:0">' + E(cf.Company || 'IS PROJECTS') + '</h2><div style="color:#64748b;margin-bottom:12px">' + E(m.name) + ' - ' + E(rec.ID) + '</div>'
     + (msg ? '<p style="white-space:pre-wrap">' + E(msg) + '</p>' : '') + '<table style="border-collapse:collapse;width:100%">'
     + row('Status', '<b>' + E(status(rec)) + '</b>') + row('Date', E(rec.Date)) + row('Area / Branch', E(rec.Area) + ' / ' + E(rec.Branch)) + fieldRows(rec, cf, row, E) + row('Requested by', fm(rec.RequestedBy)) + row('Approved by (branch)', fm(rec.ApprovedBy))
-    + row('ISD decision', rec.Decision === 'Forward' ? 'Forward to ' + E(rec.ForwardTo) : (rec.Decision ? 'For execution' : 'Pending'))
     + Object.keys(N).map(k => row(E(k) + ' remarks', E(N[k].text).replace(/\n/g, '<br>') + '<br><small>' + fm(N[k].sig) + '</small>')).join('')
     + row('Answered by (ISD)', fm(rec.AnsweredBy)) + (incRev ? row('Reviewed by', fm(rec.ReviewedBy)) : '') + '</table><p style="color:#94a3b8;font-size:12px">Sent by ' + E(s.name) + ' through IS PROJECTS</p></div>';
+}
+
+/* ---- messages / follow-ups ---- */
+const MH = ['ID','RecordID','At','By','Role','Kind','Text'];
+function msheet() { const had = SS.getSheetByName('Messages'), s = sh('Messages', MH); if (!had) s.getRange('C:G').setNumberFormat('@'); return s; }
+function addMsg(rid, s, kind, text) { msheet().appendRow(['M' + Date.now().toString(36) + Math.floor(Math.random() * 1000), rid, new Date().toISOString(), s.name, s.role, kind, String(text || '').slice(0, 1000)]); }
+function recipients(rec, s) {
+  const st = status(rec), us = rows('Users').filter(u => u.Email && String(u.Active).toUpperCase() !== 'FALSE' && u.Username !== s.username);
+  const out = us.filter(u => inScope({role: u.Role, branch: u.Branch}, rec) && ((st === 'Pending Branch Approval' && u.Role === 'Approver') || ((st === 'For ISD Decision' || st === 'For Execution') && u.Role === 'ISD') ||
+    (st.indexOf('Pending Note') === 0 && u.Role === 'Dept' && st.indexOf(u.Dept) >= 0) || (st === 'For Review' && u.Role === 'Reviewer')));
+  if (s.username !== rec.CreatedBy) { const q = us.find(u => u.Username === rec.CreatedBy); if (q && out.indexOf(q) < 0) out.push(q); }
+  return out;
+}
+function notifyMsg(rec, s, kind, text, link) {
+  const to = recipients(rec, s).map(u => u.Email); if (!to.length) return 0;
+  const cf = config(), E = x => String(x == null ? '' : x).replace(/[&<>]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]));
+  try {
+    MailApp.sendEmail({to: to.join(','), name: cf.Company || 'IS PROJECTS', subject: '[' + rec.ID + '] ' + (kind === 'followup' ? 'Follow-up requested' : 'New message'),
+      body: s.name + ': ' + (text || 'Asking for a progress update.') + '\nRequest ' + rec.ID + ' - ' + status(rec),
+      htmlBody: '<div style="font-family:Arial,sans-serif;max-width:560px;color:#10243a"><h3 style="margin:0">' + E(cf.Company || 'IS PROJECTS') + '</h3><p><b>' + E(s.name) + '</b> (' + E(s.role) + ') ' + (kind === 'followup' ? 'is asking for a progress update on' : 'sent a message about') + ' <b>' + E(rec.ID) + '</b>.</p><p>Status: <b>' + E(status(rec)) + '</b><br>Branch: ' + E(rec.Branch) + '</p>'
+        + (text ? '<blockquote style="border-left:3px solid #0f766e;margin:0;padding:6px 12px;background:#f6f8fa">' + E(text).replace(/\n/g, '<br>') + '</blockquote>' : '') + (/^https:\/\//.test(link || '') ? '<p><a href="' + E(link) + '">Open the system</a></p>' : '') + '</div>'});
+  } catch (e) { return 0; }
+  return to.length;
 }
 
 function handle(r) {
@@ -198,10 +221,11 @@ function handle(r) {
     }
     case 'update': {
       need(s, ['Admin','ISD']); const rec = findS(s, r.id);
+      if (rec.AnsweredBy || rec.ReviewedBy || rec.Status === 'Rejected') throw new Error('This request is locked. The administrator must return it first.');
       const dup = findDup(Object.assign({}, r.data, {Monitoring: rec.Monitoring}), r.id); if (dup) throw new Error(dupMsg(dup));
       ['Date','Branch','ErrorType','DocsDamage','ProblemDetails'].forEach(k => rec[k] = r.data[k]); rec.Data = JSON.stringify(r.data.Data || {}); rec.Area = areaOf(rec.Branch); save(rec); return true;
     }
-    case 'delete': { need(s, ['Admin','ISD']); const rec = findS(s, r.id); purgeFiles(f => f.RecordID === rec.ID); SS.getSheetByName('ISRF').deleteRow(rec._row); return true; }
+    case 'delete': { need(s, ['Admin','ISD']); const rec = findS(s, r.id); if (status(rec) !== 'Pending Branch Approval') throw new Error('A request can only be deleted while it is pending branch approval'); purgeFiles(f => f.RecordID === rec.ID); msheet(); rows('Messages').filter(m => m.RecordID === rec.ID).sort((a, b) => b._row - a._row).forEach(m => SS.getSheetByName('Messages').deleteRow(m._row)); SS.getSheetByName('ISRF').deleteRow(rec._row); return true; }
     case 'act': {
       const rec = findS(s, r.id), d = r.data || {}, st = status(rec), n = notes(rec);
       if (st === 'Completed' || st === 'Rejected') throw new Error('This request is already closed');
@@ -228,7 +252,7 @@ function handle(r) {
           if (d.text) { n.ISD = {text: d.text, sig: sig(s)}; rec.Notes = JSON.stringify(n); }
           rec.AnsweredBy = sig(s); break;
         case 'review': need(s, ['Admin','Reviewer']); if (st !== 'For Review') throw new Error('Not ready for review'); rec.ReviewedBy = sig(s); break;
-        case 'reject': need(s, ['Admin','ISD','Approver']); rec.Status = 'Rejected'; break;
+        case 'reject': need(s, ['Admin','ISD','Approver']); if (rec.AnsweredBy || rec.ReviewedBy) throw new Error('Answered requests can only be returned by the administrator'); rec.Status = 'Rejected'; break;
         default: throw new Error('Unknown step');
       }
       rec.Status = r.type === 'reject' ? 'Rejected' : status(rec); save(rec); return rec.Status;
@@ -293,6 +317,34 @@ function handle(r) {
       let home = {}; try { home = JSON.parse(cfgGet('Home') || '{}'); } catch (e) {}
       return {home, images: imgs};
     }
+    case 'msgs': { findS(s, r.id); msheet(); return rows('Messages').filter(m => m.RecordID === r.id).map(m => ({By: m.By, Role: m.Role, Kind: m.Kind, At: m.At, Text: m.Text})); }
+    case 'msg': {
+      need(s, ['Admin','ISD','User','Approver','Dept','Reviewer']); const rec = findS(s, r.id), kind = r.kind === 'followup' ? 'followup' : 'message', text = String(r.text || '').trim();
+      if (kind === 'message' && !text) throw new Error('Type a message first');
+      msheet();
+      if (kind === 'followup') { const last = rows('Messages').filter(m => m.RecordID === rec.ID && m.Kind === 'followup' && m.By === s.name).pop(); if (last && Date.now() - new Date(last.At).getTime() < 4 * 3600000) throw new Error('You already asked for an update recently. Please wait a few hours.'); }
+      addMsg(rec.ID, s, kind, text || 'Asking for a progress update.'); return notifyMsg(rec, s, kind, text, r.link);
+    }
+    case 'inbox': {
+      msheet(); const vis = {}; rows('ISRF').filter(x => canSee(s, x) && !(s.role === 'User' && x.CreatedBy !== s.username)).forEach(x => vis[x.ID] = x); const cut = Date.now() - 30 * 86400000;
+      return rows('Messages').filter(m => vis[m.RecordID] && m.By !== s.name && new Date(m.At).getTime() > cut).slice(-40).reverse().map(m => ({RecordID: m.RecordID, At: m.At, By: m.By, Role: m.Role, Kind: m.Kind, Text: m.Text, Status: status(vis[m.RecordID])}));
+    }
+    case 'return': {
+      need(s, ['Admin']); const rec = findS(s, r.id), d = r.data || {}, n = notes(rec);
+      const locked = !!(rec.AnsweredBy || rec.ReviewedBy || rec.Status === 'Rejected');
+      if (d.to === 'pending' && locked) throw new Error('Use Return to send answered, reviewed or rejected requests back');
+      if (d.to !== 'pending' && !locked) throw new Error('Only answered, reviewed or rejected requests can be returned');
+      let label = '';
+      if (d.to === 'approval' || d.to === 'pending') { rec.ApprovedBy = ''; rec.Decision = ''; rec.ForwardTo = ''; rec.AnsweredBy = ''; rec.ReviewedBy = ''; Object.keys(n).forEach(k => { delete n[k].sig; }); label = d.to === 'pending' ? 'pending branch approval' : 'branch approval'; }
+      else if (d.to === 'notation') {
+        const deps = (d.depts && d.depts.length) ? d.depts : String(rec.ForwardTo).split(',').filter(Boolean);
+        if (!deps.length) throw new Error('Choose at least one department'); if (!rec.ApprovedBy) throw new Error('Branch approval is required before notation');
+        rec.Decision = 'Forward'; rec.ForwardTo = deps.join(','); deps.forEach(k => { if (n[k]) delete n[k].sig; }); rec.AnsweredBy = ''; rec.ReviewedBy = ''; label = 'notation by ' + deps.join(', ');
+      } else if (d.to === 'execution') { rec.AnsweredBy = ''; rec.ReviewedBy = ''; if (!rec.Decision) rec.Decision = 'Execute'; label = 'execution'; }
+      else throw new Error('Choose where to return the request');
+      rec.Notes = JSON.stringify(n); rec.Status = ''; rec.Status = status(rec); save(rec);
+      addMsg(rec.ID, s, 'return', 'Returned for ' + label + (d.reason ? ': ' + d.reason : '')); return rec.Status;
+    }
     case 'saveLogin': {
       need(s, ['Admin']); const d = r.data;
       if (d.img !== undefined && d.img !== null) setImg('login', d.img);
@@ -315,11 +367,11 @@ function handle(r) {
       rows('Config').filter(x => x.Type === 'Setting').forEach(x => v.push(['Setting', x.Value, x.Area]));
       c.clear(); c.getRange(1, 1, v.length, 3).setValues(v); return true;
     }
-    case 'listUsers': need(s, ['Admin']); return rows('Users').map(u => ({username: u.Username, name: u.Name, role: u.Role, active: String(u.Active).toUpperCase() !== 'FALSE', branch: u.Branch, dept: u.Dept}));
+    case 'listUsers': need(s, ['Admin']); return rows('Users').map(u => ({username: u.Username, name: u.Name, role: u.Role, active: String(u.Active).toUpperCase() !== 'FALSE', branch: u.Branch, dept: u.Dept, email: u.Email || ''}));
     case 'saveUser': {
       need(s, ['Admin']); const us = SS.getSheetByName('Users'), d = r.data, ex = rows('Users').find(x => String(x.Username).toLowerCase() === d.username.toLowerCase());
-      const row = [d.username, d.name, d.role, d.password ? hash(d.password) : (ex ? ex.Hash : hash('changeme')), d.active !== false, d.branch || '', d.dept || ''];
-      if (ex) us.getRange(ex._row, 1, 1, 7).setValues([row]); else us.appendRow(row); return true;
+      const row = [d.username, d.name, d.role, d.password ? hash(d.password) : (ex ? ex.Hash : hash('changeme')), d.active !== false, d.branch || '', d.dept || '', d.email || ''];
+      if (ex) us.getRange(ex._row, 1, 1, 8).setValues([row]); else us.appendRow(row); return true;
     }
   }
   throw new Error('Unknown action');
