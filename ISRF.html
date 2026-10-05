@@ -150,13 +150,13 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
  <div class="lw"><div class="lf"><div class="lbrand"><i id="lbi">IS</i><b id="lbn">IS PROJECTS</b></div><h2 id="lft">Sign in</h2><div id="lfh" style="color:var(--mute)">Use the account given by your administrator.</div>
   <label for="lu">Username</label><input id="lu" autocomplete="username">
   <label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password">
-  <button class="btn full" id="lb">Sign in</button><div class="err" id="le"></div><div class="note" id="lfo"></div></div></div>
+  <button class="btn full" id="lb">Sign in</button><div class="err" id="le"></div><div class="note" id="lsu" style="text-align:center;margin-top:14px">No account yet? <a href="#" id="lsa">Create an account</a></div><div class="note" id="lfo"></div></div></div>
 </div>
 <div id="app" class="hide">
  <header id="mtop"><button class="mb" id="mbtn" type="button">Menu</button><b id="mbn">IS PROJECTS</b><span style="flex:1"></span><button class="mb" id="bell2" type="button">Alerts <span class="bd hide" id="bd2">0</span></button><button class="mb" id="lo2" type="button">Sign out</button></header>
  <aside><div class="brand"><i id="bi">IS</i><div><span id="bn">IS PROJECTS</span><small id="bs">Monitoring system</small></div></div>
   <a data-v="home" class="on">Home</a><div class="sec">Monitoring</div><nav id="mons"></nav><div class="sec">Insights</div><a data-v="rep">Reports</a>
-  <div class="sec">Administration</div><a data-v="set" id="navset">Setup and users</a><a id="so" style="margin-top:18px">Sign out</a></aside><div id="dov"></div>
+  <div class="sec">Administration</div><a data-v="set" id="navset">Setup and users <span class="bd hide" id="sbd">0</span></a><a id="so" style="margin-top:18px">Sign out</a></aside><div id="dov"></div>
  <main>
   <div class="top"><h1 id="vt">ISRF records</h1>
    <div class="chip"><span id="un"></span><span class="role" id="ur"></span><button class="btn sec sm" id="bell" type="button">Alerts <span class="bd hide" id="bd">0</span></button><button class="btn sec sm" id="lo">Sign out</button></div></div>
@@ -176,12 +176,13 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
     <div id="ro" style="padding:18px"><div class="empty">Choose Area or Branch, then click Generate.</div></div></div>
   </section>
   <section id="v-set" class="hide">
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Account requests</h3><div style="color:var(--mute);margin:4px 0 8px">People who asked for an account from the login page. Approve to create the account; they are notified by email, and you can also text them.</div><div id="acc"></div></div>
    <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Login page</h3><div style="color:var(--mute);margin:4px 0 8px">Choose a layout and the text shown before users sign in.</div>
    <div class="g2"><div><label>Layout</label><select id="g1"><option value="split">Split - image panel on the left</option><option value="splitr">Split - image panel on the right</option><option value="basic">Basic boilerplate - simple centered card</option><option value="cover">Cover - full background image with card</option></select></div>
    <div><label>Background / panel image</label><input type="file" id="g8" accept="image/*"><div id="g9" style="margin-top:6px"></div></div>
    <div><label>Headline</label><input id="g2" placeholder="Company name by default"></div><div><label>Form title</label><input id="g5" placeholder="Sign in"></div></div>
    <label>Sub text</label><input id="g3"><label>Form hint</label><input id="g6"><label>Highlights (one per line, shown as chips on split layouts)</label><textarea id="g4" rows="3"></textarea>
-   <label>Footer note under the form</label><input id="g7" placeholder="e.g. Need access? Contact the IS department."><div class="acts"><button class="btn" id="gs">Save login page</button></div></div>
+   <label>Footer note under the form</label><input id="g7" placeholder="e.g. Need access? Contact the IS department."><label style="font-weight:400;margin-top:10px"><input type="checkbox" id="g10" style="width:auto"> Allow people to request an account from the login page</label><div class="acts"><button class="btn" id="gs">Save login page</button></div></div>
    <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Home page</h3><div style="color:var(--mute);margin:4px 0 8px">The first page users see. Add a banner, a welcome message, and a picture and description for each monitoring.</div>
    <div class="g2"><div><label>Welcome title</label><input id="h1" placeholder="Welcome to our monitoring portal"></div><div><label>Banner image</label><input type="file" id="h2" accept="image/*"><div id="h3" style="margin-top:6px"></div></div></div>
    <label>Welcome text</label><textarea id="h4" rows="2"></textarea><div id="hc" style="margin-top:10px"></div>
@@ -216,13 +217,14 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
    <div><label>Total storage cap for attachments (MB)</label><input id="s3" type="number" min="1"></div><div><label>Delete files of completed requests after (days, 0 = keep)</label><input id="s4" type="number" min="0"></div></div>
    <div class="acts"><button class="btn sec" id="sx">Clean up now</button><button class="btn" id="ss">Save storage settings</button></div></div>
    <div class="panel"><div class="bar"><h3 style="flex:1;align-self:center">Users (click a row to edit)</h3></div>
-    <div class="tw"><table><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Visible branches</th><th>Dept</th><th>Active</th></tr></thead><tbody id="ut"></tbody></table></div>
+    <div class="tw"><table><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Visible branches</th><th>Dept</th><th>Contact</th><th>Active</th></tr></thead><tbody id="ut"></tbody></table></div>
     <form id="uf" style="padding:16px" class="g2" onsubmit="return false">
      <div><label>Username</label><input id="u1"></div><div><label>Full name</label><input id="u2"></div>
      <div><label>Role</label><select id="u3"><option>User</option><option>Approver</option><option>ISD</option><option>Dept</option><option>Reviewer</option><option>Viewer</option><option>Admin</option></select></div>
      <div><label>Password (blank = keep)</label><input id="u4" type="password"></div>
      <div><label>Visible branches / offices (Ctrl+click for several)</label><select id="u6" multiple size="7"></select></div><div><label>Department (for Dept role)</label><select id="u7"></select></div>
-     <div><label>Email (for follow-up notifications)</label><input id="u8" type="email"></div>
+     <div><label>Email *</label><input id="u8" type="email"></div>
+     <div><label>Contact number *</label><input id="u9" type="tel" placeholder="09XXXXXXXXX"></div>
      <div><label><input type="checkbox" id="u5" checked style="width:auto"> Active</label></div>
      <div style="text-align:right"><button class="btn" id="us">Save user</button></div></form></div>
   </section>
@@ -248,7 +250,7 @@ async function api(action,p={}){
 async function doLogin(){$("le").textContent="";$("lb").disabled=true;
   try{const d=await api("login",{username:$("lu").value.trim(),password:$("lp").value});S.token=d.token;S.user=d.user;saveTok(d.token);start()}
   catch(e){$("le").textContent=/JSON|fetch|null/i.test(e.message)?"Cannot reach the Google Sheet ("+e.message+")":e.message}finally{$("lb").disabled=false}}
-let BR={name:"",logo:"",ui:{}};
+let BR={name:"",logo:"",ui:{}},PUB={},ACC=[];
 function applyBrand(d){const nm=d.Company||"",u=d.UI||{};BR={name:nm,logo:d.Logo||"",ui:u};
   $("bn").textContent=nm||"IS PROJECTS";$("bs").textContent=nm?"IS PROJECTS":"Monitoring system";
   $("bi").innerHTML=BR.logo?`<img src="${BR.logo}" alt="">`:esc((nm||"IS").slice(0,2).toUpperCase());document.title=(nm?nm+" - ":"")+"IS PROJECTS";
@@ -260,11 +262,11 @@ function applyLogin(d){const L=d.Login||{},nm=d.Company||"",lay=L.layout||"split
   el.className="lay-"+lay+(el.classList.contains("hide")?" hide":"");
   $("lh").textContent=L.title||nm||"IS PROJECTS";$("ls").textContent=L.sub||"Record requests, collect sign-offs, and track every monitoring to completion.";
   $("lc").innerHTML=(L.chips||"Requested\nApproved\nNoted\nExecuted\nReviewed").split("\n").map(x=>x.trim()).filter(Boolean).map(x=>`<span>${esc(x)}</span>`).join("");
-  $("lft").textContent=L.formTitle||"Sign in";$("lfh").textContent=L.hint||"Use the account given by your administrator.";$("lfo").textContent=L.footer||"";
+  $("lft").textContent=L.formTitle||"Sign in";$("lfh").textContent=L.hint||"Use the account given by your administrator.";$("lfo").textContent=L.footer||"";$("lsu").classList.toggle("hide",L.signup===false);
   $("lbn").textContent=nm||"IS PROJECTS";$("lbi").innerHTML=d.Logo?`<img src="${d.Logo}" alt="">`:esc((nm||"IS").slice(0,2).toUpperCase());
   el.style.backgroundImage=lay==="cover"&&img?`url('${img}')`:"";
   document.querySelector(".hero").style.backgroundImage=img&&(lay==="split"||lay==="splitr")?`linear-gradient(rgba(11,29,49,.68),rgba(11,29,49,.68)),url('${img}')`:""}
-if(API_URL)api("brand").then(d=>{applyBrand(d);applyLogin(d)}).catch(()=>{});
+if(API_URL)api("brand").then(d=>{PUB=d;applyBrand(d);applyLogin(d)}).catch(()=>{});
 $("lb").onclick=doLogin;$("lp").onkeydown=e=>{if(e.key==="Enter")doLogin()};
 function forceOut(q){document.body.classList.remove("drawer");S.token=S.user=null;saveTok(null);HOME=null;V="home";$("app").classList.add("hide");$("login").classList.remove("hide");$("login").style.visibility="";$("lp").value="";if(!q)toast("Session expired. Please sign in again.")}
 $("lo").onclick=()=>forceOut(true);
@@ -364,12 +366,51 @@ function sendReq(r){const st=status(r),m=mon(r.Monitoring);let last={};try{last=
   $("qe").onclick=async()=>{rem();$("qe").disabled=true;try{const n=await api("email",{id:r.ID,to:$("q1").value,message:$("q3").value,attach:$("q4").checked,incReview:!!($("q5")&&$("q5").checked)});closeM();toast("Email sent to "+n+" recipient(s)")}catch(e){toast(e.message);$("qe").disabled=false}};
   $("qs").onclick=()=>{rem();const n=$("q2").value.replace(/[^\d+,;]/g,"").replace(/;/g,",");if(!n)return toast("Enter a mobile number");location.href="sms:"+n+"?&body="+encodeURIComponent(txt())};
   if($("qg"))$("qg").onclick=async()=>{rem();try{const n=await api("sms",{id:r.ID,to:$("q2").value,message:txt()});closeM();toast("SMS sent to "+n+" number(s)")}catch(e){toast(e.message)}}}
+/* ---- sign up ---- */
+function signupForm(){modal(`<h2>Create an account</h2><div style="color:var(--mute)">Your request is reviewed by the administrator. You will be notified by email or text once it is approved.</div>
+  <div class="g2"><div><label>Full name *</label><input id="z1"></div><div><label>Username *</label><input id="z2" autocomplete="username"></div>
+  <div><label>Email *</label><input id="z3" type="email"></div><div><label>Contact number *</label><input id="z4" type="tel" placeholder="09XXXXXXXXX"></div>
+  <div><label>Branch / office</label><select id="z5"><option value="">(not sure)</option>${opts(PUB.Branches||[])}</select></div><div><label>Position or reason for access</label><input id="z6"></div>
+  <div><label>Password * (at least 8 characters)</label><input id="z7" type="password" autocomplete="new-password"></div><div><label>Confirm password *</label><input id="z8" type="password" autocomplete="new-password"></div></div>
+  <input id="z9" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px"><div class="err" id="ze"></div>
+  <div class="acts"><button class="btn sec" onclick="closeM()">Cancel</button><button class="btn" id="zs">Send request</button></div>`);
+  $("zs").onclick=async()=>{const g=i=>$(i).value.trim();$("ze").textContent="";
+   if(!g("z1")||!g("z2")||!g("z3")||!g("z4")||!$("z7").value)return $("ze").textContent="Please fill in all fields marked with *";
+   if($("z7").value.length<8)return $("ze").textContent="Password must be at least 8 characters";
+   if($("z7").value!==$("z8").value)return $("ze").textContent="Passwords do not match";
+   $("zs").disabled=true;
+   try{const m=await api("signup",{data:{name:g("z1"),username:g("z2"),email:g("z3"),phone:g("z4"),branch:$("z5").value,note:g("z6"),password:$("z7").value,website:$("z9").value}});
+    modal(`<h2>Request sent</h2><p>${esc(m)}</p><div class="acts"><button class="btn" onclick="closeM()">OK</button></div>`)}
+   catch(e){$("ze").textContent=e.message;$("zs").disabled=false}}}
+$("lsa").onclick=e=>{e.preventDefault();signupForm()};
+/* ---- admin: account requests ---- */
+const accBadge=()=>{const n=ACC.filter(a=>a.Status==="Pending").length;$("sbd").textContent=n;$("sbd").classList.toggle("hide",!n)};
+function approvedDlg(x){const txt=`${BR.name||"IS PROJECTS"}: Hi ${x.name}, your account is approved. Username: ${x.username}. Sign in with the password you created: ${location.href.split("#")[0]}`;
+  modal(`<h2>Account approved</h2><p>${esc(x.name)} (${esc(x.username)}) can now sign in.</p><p>${x.emailed?"An approval email was sent to "+esc(x.email)+".":"The email could not be sent. Please contact the user."}</p><p>Contact number: <b>${esc(x.phone)}</b></p>
+  <div class="acts"><button class="btn sec" onclick="closeM()">Close</button><button class="btn sec" id="at1">Open SMS app</button>${S.cfg.SmsOn?'<button class="btn" id="at2">Send SMS</button>':""}</div>`);
+  $("at1").onclick=()=>{location.href="sms:"+String(x.phone).replace(/[^\d+]/g,"")+"?&body="+encodeURIComponent(txt)};
+  if($("at2"))$("at2").onclick=async()=>{try{await api("smsRaw",{to:x.phone,message:txt});toast("SMS sent");closeM()}catch(e){toast(e.message)}}}
+async function fillAccounts(){try{ACC=await api("signups")}catch(e){ACC=[]}accBadge();
+  const so='<option value="*">All branches and offices</option>'+areas().map(a=>`<option value="@${esc(a)}">Whole area: ${esc(a)}</option>`).join("")+S.cfg.Branch.map(b=>`<option value="${esc(b.name)}">${esc(b.name)}</option>`).join("");
+  $("acc").innerHTML=ACC.map(a=>{const head=`<b>${esc(a.Name)}</b> (${esc(a.Username)}) <span class="badge ${a.Kind==="existing"?"Rejected":""}">${a.Kind==="existing"?"Existing account":"New"}</span><div class="bm">${esc(a.Email)} - ${esc(a.Phone)}${a.Branch?" - requested: "+esc(a.Branch):""}${a.Note?"<br>"+esc(a.Note):""}</div>`;
+   if(a.Status!=="Pending")return`<div class="bm" style="padding:4px 0">${esc(a.Name)} (${esc(a.Username)}) - ${esc(a.Status)}${a.Reason?": "+esc(a.Reason):""}</div>`;
+   if(a.Kind==="existing")return`<div class="fr ac" data-id="${esc(a.ID)}" style="display:block">${head}<div class="bm" style="color:var(--amber)">This username or email already belongs to the account "${esc(a.ExistingUser)}". Update that account with these details, or dismiss.</div><div class="acts2"><button class="btn sec sm ad" type="button">Dismiss</button><button class="btn sm au" type="button">Update existing account</button></div></div>`;
+   return`<div class="fr ac" data-id="${esc(a.ID)}" style="display:block">${head}<div class="g2"><div><label>Role</label><select class="ar1"><option>User</option><option>Approver</option><option>ISD</option><option>Dept</option><option>Reviewer</option><option>Viewer</option><option>Admin</option></select></div>
+   <div><label>Department (for Dept role)</label><select class="ar3"><option value=""></option>${opts(S.cfg.Dept)}</select></div><div style="grid-column:1/-1"><label>Visible branches / offices</label><select class="ar2" multiple size="5">${so}</select></div></div>
+   <div class="acts2"><button class="btn red sm ax" type="button">Reject</button><button class="btn sm aa" type="button">Approve</button></div></div>`}).join("")||'<div class="bm">No account requests.</div>';
+  $("acc").querySelectorAll(".ac").forEach(c=>{const a=ACC.find(x=>x.ID===c.dataset.id),q=s=>c.querySelector(s),go=async(act,p,m)=>{try{await api(act,{id:a.ID,...p});toast(m);fillAccounts();loadSet2()}catch(e){toast(e.message)}};
+   if(q(".ar2"))[...q(".ar2").options].forEach(o=>{if(o.value===a.Branch)o.selected=true});
+   if(q(".aa"))q(".aa").onclick=async()=>{try{const x=await api("approveSignup",{id:a.ID,data:{role:q(".ar1").value,dept:q(".ar3").value,branch:[...q(".ar2").selectedOptions].map(o=>o.value).join(",")},link:location.href.split("#")[0]});approvedDlg(x);fillAccounts();loadSet2()}catch(e){toast(e.message)}};
+   if(q(".ax"))q(".ax").onclick=()=>{const r=prompt("Reason (optional)");if(r!==null)go("rejectSignup",{reason:r},"Request rejected")};
+   if(q(".au"))q(".au").onclick=()=>confirm("Replace the name, email and contact number of \""+a.ExistingUser+"\" with these details? The password is not changed.")&&go("applyExisting",{},"Account updated");
+   if(q(".ad"))q(".ad").onclick=()=>go("dismissSignup",{},"Dismissed")})}
+const loadSet2=async()=>{try{const u=await api("listUsers");S.users=u;$("ut").innerHTML=u.map((x,i)=>`<tr class="r" data-i="${i}"><td>${esc(x.username)}</td><td>${esc(x.name)}</td><td>${x.role}</td><td>${esc(x.branch)}</td><td>${esc(x.dept)}</td><td>${esc(x.email)}<br>${esc(x.phone)}</td><td>${x.active?"Yes":"No"}</td></tr>`).join("")}catch(e){}};
 /* ---- messages, follow-ups, return, alerts ---- */
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},seenKey=()=>"isrf_seen_"+(S.user&&S.user.username);
 const fAt=t=>{const d=new Date(t);return isNaN(d)?"":d.toLocaleDateString("en-GB")+" "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})};
 let INBOX=[];
 async function poll(){if(!S.token)return;try{INBOX=await api("inbox");const seen=Number(lsGet(seenKey())||0),n=INBOX.filter(m=>new Date(m.At).getTime()>seen).length;
-  ["bd","bd2"].forEach(i=>{$(i).textContent=n;$(i).classList.toggle("hide",!n)});if(V==="home"&&$("v-home").innerHTML)renderHome()}catch(e){}}
+  ["bd","bd2"].forEach(i=>{$(i).textContent=n;$(i).classList.toggle("hide",!n)});if(S.user.role==="Admin"){try{ACC=await api("signups");accBadge()}catch(e){}}if(V==="home"&&$("v-home").innerHTML)renderHome()}catch(e){}}
 function openAlerts(){document.body.classList.remove("drawer");view("home");setTimeout(()=>{lsSet(seenKey(),Date.now());["bd","bd2"].forEach(i=>$(i).classList.add("hide"))},2500)}
 async function loadMsgs(r){const el=$("ml");if(!el)return;
   try{const m=await api("msgs",{id:r.ID});el.innerHTML=m.map(x=>`<div class="ms"><b>${esc(x.By)}</b> <small>${esc(x.Role)} - ${esc(fAt(x.At))}</small>${x.Kind==="followup"?' <span class="badge">Follow-up</span>':x.Kind==="return"?' <span class="badge Rejected">Returned</span>':""}<div style="white-space:pre-wrap">${esc(x.Text)}</div></div>`).join("")||'<div class="bm">No messages yet.</div>'}catch(e){el.textContent=e.message}}
@@ -439,6 +480,7 @@ async function renderHome(){
   const closed=s=>s==="Completed"||s==="Rejected",latest=[...rs].reverse().slice(0,6);
   const seen=Number(lsGet(seenKey())||0),today=new Date().toISOString().slice(0,10),mine=rs.filter(need).slice(0,6),safe=x=>/^https?:\/\//i.test(x||"")?x:"";
   const side=`<div class="blk"><h3>Needs your action</h3>${mine.length?mine.map(r=>`<div class="bi" data-id="${esc(r.ID)}"><b>${esc(r.ID)}</b><span>${esc(r.Branch)} - ${esc(r.st)}</span></div>`).join(""):'<div class="bm">Nothing is waiting for you.</div>'}</div>`
+   +(u.role==="Admin"&&ACC.some(a=>a.Status==="Pending")?`<div class="blk"><h3>Account requests</h3><div class="acx" style="cursor:pointer"><b>${ACC.filter(a=>a.Status==="Pending").length} waiting for approval</b><div class="bm">Click to review</div></div></div>`:"")
    +(INBOX.length?`<div class="blk"><h3>Follow-ups and messages</h3>${INBOX.slice(0,6).map(m=>`<div class="bi" data-id="${esc(m.RecordID)}"><b>${esc(m.RecordID)}${new Date(m.At).getTime()>seen?' <span class="badge">New</span>':""}</b><span>${esc(m.By)}${m.Kind==="followup"?" asked for a progress update":": "+esc(String(m.Text).slice(0,70))}</span></div>`).join("")}</div>`:"")
    +(h.ads||[]).filter(a=>!a.e||a.e>=today).map(a=>`<div class="blk ad">${im["ad:"+a.id]?`<div class="adi" style="background-image:url('${im["ad:"+a.id]}')"></div>`:""}<div class="adb"><small>${esc(a.g||"Announcement")}</small><b style="display:block">${esc(a.t)}</b><p>${esc(a.x)}</p>${safe(a.u)?`<a href="${esc(safe(a.u))}" target="_blank" rel="noopener">Learn more</a>`:""}</div></div>`).join("")
    +((h.links||[]).some(l=>safe(l.u))?`<div class="blk"><h3>Quick links</h3>${h.links.filter(l=>safe(l.u)).map(l=>`<a class="bl" href="${esc(safe(l.u))}" target="_blank" rel="noopener">${esc(l.l)}</a>`).join("")}</div>`:"")
@@ -447,16 +489,17 @@ async function renderHome(){
   <div class="cards">${S.cfg.Monitor.map(m=>{const a=rs.filter(r=>r.Monitoring===m.code),op=a.filter(r=>!closed(r.st)).length,dn=a.filter(r=>r.st==="Completed").length,nd=a.filter(need).length,c=(h.cards||{})[m.code]||{},ci=im["card:"+m.code];
    return`<div class="mc" data-m="${esc(m.code)}"><div class="mi ${ci?"":"ph"}" style="${ci?`background-image:url('${ci}')`:""}">${ci?"":esc(m.code)}</div><div class="mb"><b>${esc(m.name)}</b><p>${esc(c.desc||"")}</p><div class="mm"><span>${op} open</span><span>${dn} completed</span>${nd?`<span class="mn">${nd} need your action</span>`:""}</div></div></div>`}).join("")}</div>
   <div class="panel"><div class="bar"><h3 style="align-self:center">Latest activity</h3></div><div class="tw"><table><thead><tr><th>ID</th><th>Monitoring</th><th>Date</th><th>Branch</th><th>Status</th></tr></thead><tbody>${latest.map(r=>`<tr class="r" data-id="${esc(r.ID)}"><td><b>${esc(r.ID)}</b></td><td>${esc(mon(r.Monitoring).name)}</td><td>${esc(r.Date)}</td><td>${esc(r.Branch)}</td><td><span class="badge ${cls(r.st)}">${esc(r.st)}</span></td></tr>`).join("")||'<tr><td colspan="5" class="empty">No requests yet</td></tr>'}</tbody></table></div></div></div><div class="hside">${side}</div></div>`;
+  document.querySelectorAll("#v-home .acx").forEach(e=>e.onclick=()=>view("set"));
   document.querySelectorAll("#v-home .mc").forEach(c=>c.onclick=()=>{S.mon=c.dataset.m;view("isrf")});
   document.querySelectorAll("#v-home tr.r,#v-home .bi").forEach(t=>t.onclick=()=>detail(t.dataset.id))}
 /* ---- setup: login page ---- */
 let LG={},LIMG;
 async function fillLogin(){try{LG=await api("brand")}catch(e){LG={}}const L=LG.Login||{};LIMG=undefined;
-  $("g1").value=L.layout||"split";$("g2").value=L.title||"";$("g3").value=L.sub||"";$("g4").value=L.chips||"";$("g5").value=L.formTitle||"";$("g6").value=L.hint||"";$("g7").value=L.footer||"";
+  $("g1").value=L.layout||"split";$("g2").value=L.title||"";$("g3").value=L.sub||"";$("g4").value=L.chips||"";$("g5").value=L.formTitle||"";$("g6").value=L.hint||"";$("g7").value=L.footer||"";$("g10").checked=L.signup!==false;
   $("g9").innerHTML=LG.LoginImg?`<img src="${LG.LoginImg}" style="height:44px;border-radius:6px;vertical-align:middle"> <button class="btn sec sm" id="gx" type="button">Remove</button>`:"No image";
   if($("gx"))$("gx").onclick=()=>{LIMG="";$("g9").textContent="Image will be removed when you save"}}
 $("g8").onchange=async()=>{try{LIMG=await imgOf($("g8").files[0],BAN);$("g9").innerHTML=`<img src="${LIMG}" style="height:44px;border-radius:6px">`}catch(e){toast(e.message)}};
-$("gs").onclick=async()=>{const login={layout:$("g1").value,title:$("g2").value.trim(),sub:$("g3").value.trim(),chips:$("g4").value,formTitle:$("g5").value.trim(),hint:$("g6").value.trim(),footer:$("g7").value.trim()},data={login};if(LIMG!==undefined)data.img=LIMG;
+$("gs").onclick=async()=>{const login={layout:$("g1").value,title:$("g2").value.trim(),sub:$("g3").value.trim(),chips:$("g4").value,formTitle:$("g5").value.trim(),hint:$("g6").value.trim(),footer:$("g7").value.trim(),signup:$("g10").checked},data={login};if(LIMG!==undefined)data.img=LIMG;
   try{await api("saveLogin",{data});toast("Login page saved");await fillLogin();applyLogin({Company:BR.name,Logo:BR.logo,Login:login,LoginImg:LG.LoginImg})}catch(e){toast(e.message)}};
 /* ---- setup: home images and monitoring fields ---- */
 const imgOf=(f,tries)=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>{for(const[w,q]of tries){const k=Math.min(1,w/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);const d=c.toDataURL("image/jpeg",q);if(d.length<=235000)return res(d)}rej(new Error("Image is too detailed. Use a smaller picture."))};im.onerror=()=>rej(new Error("Cannot read this image"));im.src=URL.createObjectURL(f)});
@@ -487,11 +530,11 @@ const textToFields=t=>lines(t).map(l=>{const p=l.split("|").map(x=>x.trim()),ty=
 const readFields=()=>{const o={};document.querySelectorAll(".mfx").forEach(t=>{const a=textToFields(t.value);if(a.length)o[t.dataset.c]=a});return o};
 function fillFields(){$("mf").innerHTML=S.cfg.Monitor.map(m=>`<div><label>${esc(m.code)} - ${esc(m.name)}</label><textarea class="mfx" data-c="${esc(m.code)}" rows="6" placeholder="Label | type | options | *">${esc(fieldsToText((S.cfg.Fields||{})[m.code]||(m.code==="ISRF"?DEF:[])))}</textarea></div>`).join("")}
 /* ---- setup ---- */
-async function loadSet(){const c=S.cfg;fillBrand();fillFields();fillHome();fillLogin();$("sb").value=c.Branch.map(b=>b.area+" | "+b.name).join("\n");$("se").value=c.ErrorType.map(e=>e.mon?e.mon+" | "+e.name:e.name).join("\n");$("sm").value=c.Monitor.map(m=>m.code+" | "+m.name).join("\n");$("sd").value=c.Dept.join("\n");
+async function loadSet(){const c=S.cfg;fillBrand();fillFields();fillHome();fillLogin();fillAccounts();$("sb").value=c.Branch.map(b=>b.area+" | "+b.name).join("\n");$("se").value=c.ErrorType.map(e=>e.mon?e.mon+" | "+e.name:e.name).join("\n");$("sm").value=c.Monitor.map(m=>m.code+" | "+m.name).join("\n");$("sd").value=c.Dept.join("\n");
   $("u6").innerHTML='<option value="*">All branches and offices</option>'+areas().map(a=>`<option value="@${esc(a)}">Whole area: ${esc(a)}</option>`).join("")+S.cfg.Branch.map(b=>`<option value="${esc(b.name)}">${esc(b.name)}</option>`).join("");$("u7").innerHTML='<option value="">(none)</option>'+opts(c.Dept);
-  try{const u=await api("listUsers");S.users=u;$("ut").innerHTML=u.map((x,i)=>`<tr class="r" data-i="${i}"><td>${esc(x.username)}</td><td>${esc(x.name)}</td><td>${x.role}</td><td>${esc(x.branch)}</td><td>${esc(x.dept)}</td><td>${x.active?"Yes":"No"}</td></tr>`).join("")}catch(e){toast(e.message)}
+  try{const u=await api("listUsers");S.users=u;$("ut").innerHTML=u.map((x,i)=>`<tr class="r" data-i="${i}"><td>${esc(x.username)}</td><td>${esc(x.name)}</td><td>${x.role}</td><td>${esc(x.branch)}</td><td>${esc(x.dept)}</td><td>${esc(x.email)}<br>${esc(x.phone)}</td><td>${x.active?"Yes":"No"}</td></tr>`).join("")}catch(e){toast(e.message)}
   document.querySelectorAll("#ut tr.r").forEach(t=>t.onclick=()=>{const x=S.users[t.dataset.i],tk=String(x.branch||"").split(",").map(y=>y.trim());
-    $("u1").value=x.username;$("u2").value=x.name;$("u3").value=x.role;$("u5").checked=x.active;$("u7").value=x.dept||"";$("u8").value=x.email||"";$("u4").value="";
+    $("u1").value=x.username;$("u2").value=x.name;$("u3").value=x.role;$("u5").checked=x.active;$("u7").value=x.dept||"";$("u8").value=x.email||"";$("u9").value=x.phone||"";$("u4").value="";
     [...$("u6").options].forEach(o=>o.selected=tk.includes(o.value));$("uf").scrollIntoView({behavior:"smooth"})});
   try{const g=await api("storage"),s=g.set,pc=Math.min(100,Math.round(g.used/1048576/s.CapMB*100));
    $("sti").innerHTML=`<div class="meter"><i style="width:${pc}%"></i></div><div style="margin-top:6px"><b>${fsz(g.used)}</b> used of ${s.CapMB} MB cap (${pc}%) - ${g.count} files - ${g.mailQuota} emails left today${s.RetainDays?` - ${g.eligible} eligible for cleanup`:""}</div>
@@ -515,8 +558,8 @@ $("mx").onclick=async()=>{try{await api("saveSms",{clear:true});toast("Gateway d
 const lines=v=>v.split("\n").map(s=>s.trim()).filter(Boolean);
 $("sc").onclick=async()=>{const Branch=lines($("sb").value).map(l=>{const p=l.split("|").map(x=>x.trim());return p.length>1?{area:p[0],name:p[1]}:{area:"",name:p[0]}});
   try{await api("saveConfig",{data:{Branch,ErrorType:lines($("se").value).map(l=>{const p=l.split("|").map(x=>x.trim());return p.length>1?{mon:p[0].toUpperCase(),name:p[1]}:{mon:"",name:p[0]}}),Dept:lines($("sd").value),Fields:readFields(),Monitor:lines($("sm").value).map(l=>{const p=l.split("|").map(x=>x.trim()),code=p[0].toUpperCase().replace(/[^A-Z0-9]/g,"");return{code,name:p[1]||code}}).filter(m=>m.code)}});toast("Lists saved");load()}catch(e){toast(e.message)}};
-$("us").onclick=async()=>{const d={username:$("u1").value.trim(),name:$("u2").value.trim(),role:$("u3").value,password:$("u4").value,active:$("u5").checked,branch:[...$("u6").selectedOptions].map(o=>o.value).join(","),dept:$("u7").value,email:$("u8").value.trim()};
-  if(!d.username||!d.name)return toast("Username and full name are required");
+$("us").onclick=async()=>{const d={username:$("u1").value.trim(),name:$("u2").value.trim(),role:$("u3").value,password:$("u4").value,active:$("u5").checked,branch:[...$("u6").selectedOptions].map(o=>o.value).join(","),dept:$("u7").value,email:$("u8").value.trim(),phone:$("u9").value.trim()};
+  if(!d.username||!d.name)return toast("Username and full name are required");if(!d.email||!d.phone)return toast("Email and contact number are required so the approved account can be sent to the user");
   try{await api("saveUser",{data:d});toast("User saved");$("u4").value="";loadSet()}catch(e){toast(e.message)}};
 (async()=>{const t=getTok();if(!API_URL||!t)return;$("login").style.visibility="hidden";S.token=t;
   try{const d=await api("me");S.user=d.user;start();$("login").style.visibility=""}catch(e){S.token=null;$("login").style.visibility=""}})();
