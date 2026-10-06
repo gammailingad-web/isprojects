@@ -150,13 +150,13 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
  <div class="lw"><div class="lf"><div class="lbrand"><i id="lbi">IS</i><b id="lbn">IS PROJECTS</b></div><h2 id="lft">Sign in</h2><div id="lfh" style="color:var(--mute)">Use the account given by your administrator.</div>
   <label for="lu">Username</label><input id="lu" autocomplete="username">
   <label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password">
-  <button class="btn full" id="lb">Sign in</button><div class="err" id="le"></div><div class="note" id="lsu" style="text-align:center;margin-top:14px">No account yet? <a href="#" id="lsa">Create an account</a></div><div class="note" id="lfo"></div></div></div>
+  <button class="btn full" id="lb">Sign in</button><div class="err" id="le"></div><div class="note" id="lsu" style="text-align:center;margin-top:14px">No account yet? <a href="#" id="lsa">Create an account</a></div><div class="note" style="text-align:center;margin-top:6px"><a href="#" id="lfg">Forgot password?</a></div><div class="note" id="lfo"></div></div></div>
 </div>
 <div id="app" class="hide">
  <header id="mtop"><button class="mb" id="mbtn" type="button">Menu</button><b id="mbn">IS PROJECTS</b><span style="flex:1"></span><button class="mb" id="bell2" type="button">Alerts <span class="bd hide" id="bd2">0</span></button><button class="mb" id="lo2" type="button">Sign out</button></header>
  <aside><div class="brand"><i id="bi">IS</i><div><span id="bn">IS PROJECTS</span><small id="bs">Monitoring system</small></div></div>
   <a data-v="home" class="on">Home</a><div class="sec">Monitoring</div><nav id="mons"></nav><div class="sec">Insights</div><a data-v="rep">Reports</a>
-  <div class="sec">Administration</div><a data-v="set" id="navset">Setup and users <span class="bd hide" id="sbd">0</span></a><a id="so" style="margin-top:18px">Sign out</a></aside><div id="dov"></div>
+  <div class="sec">Administration</div><a data-v="set" id="navset">Setup and users <span class="bd hide" id="sbd">0</span></a><a id="pw" style="margin-top:18px">Change password</a><a id="so">Sign out</a></aside><div id="dov"></div>
  <main>
   <div class="top"><h1 id="vt">ISRF records</h1>
    <div class="chip"><span id="un"></span><span class="role" id="ur"></span><button class="btn sec sm" id="bell" type="button">Alerts <span class="bd hide" id="bd">0</span></button><button class="btn sec sm" id="lo">Sign out</button></div></div>
@@ -201,8 +201,10 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
    <div><label>Menu position (desktop)</label><select id="b14"><option value="side">Side menu</option><option value="top">Top menu</option></select></div>
    <div><label>Print paper size</label><select id="b7"><option>A4</option><option>Letter</option><option>Legal</option></select></div><div><label>Print footer note</label><input id="b8" placeholder="e.g. Confidential - for internal use only"></div></div>
    <div class="acts"><button class="btn" id="bs2">Save appearance</button></div></div>
-   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Messaging</h3><div style="color:var(--mute);margin:4px 0 8px">Email works through your Google account (about 100 recipients per day on a free account). SMS can always be opened in the phone's Messages app. To send SMS directly from the system, connect a Philippine SMS gateway (Semaphore). It is paid per message.</div>
-   <div class="g2"><div><label>Semaphore API key (leave blank to keep)</label><input id="m1" type="password" autocomplete="off"></div><div><label>Sender name (optional)</label><input id="m2"></div></div>
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Messaging</h3><div style="color:var(--mute);margin:4px 0 8px">Email works through your Google account (about 100 recipients per day on a free account). SMS can always be opened in the phone's Messages app. To send SMS directly from the system, connect a gateway: a free Android phone gateway (SMSGate app, sends from your own SIM) or Semaphore (paid, needs approval).</div>
+   <div class="g2"><div style="grid-column:1/-1"><label>SMS provider</label><select id="m3"><option value="android">Android phone gateway (SMSGate app - free)</option><option value="semaphore">Semaphore (paid)</option></select></div>
+   <div class="gp-a"><label>SMSGate username (shown in the app)</label><input id="m4" autocomplete="off"></div><div class="gp-a"><label>SMSGate password (blank = keep)</label><input id="m5" type="password" autocomplete="off"></div>
+   <div class="gp-s"><label>Semaphore API key (blank = keep)</label><input id="m1" type="password" autocomplete="off"></div><div class="gp-s"><label>Sender name (optional)</label><input id="m2"></div></div>
    <div id="mst" style="margin-top:8px;color:var(--mute)"></div><div class="acts"><button class="btn sec" id="mx" type="button">Disconnect gateway</button><button class="btn" id="ms">Save messaging</button></div></div>
    <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Monitoring types</h3><label>One per line: CODE | Name &nbsp;(example: ISRF | Information System Request Form). Each monitoring uses the same workflow and has its own sidebar entry and ID numbers.</label><textarea id="sm" rows="3"></textarea></div>
    <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Fields for each monitoring type</h3>
@@ -226,7 +228,14 @@ body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-lig
      <div><label>Email *</label><input id="u8" type="email"></div>
      <div><label>Contact number *</label><input id="u9" type="tel" placeholder="09XXXXXXXXX"></div>
      <div><label><input type="checkbox" id="u5" checked style="width:auto"> Active</label></div>
-     <div style="text-align:right"><button class="btn" id="us">Save user</button></div></form></div>
+     <div style="text-align:right"><button class="btn sec" id="urp" type="button">Send temporary password</button> <button class="btn" id="us">Save user</button></div></form></div>
+   <div class="panel" style="padding:18px;margin-top:14px"><h3>Database export and migration (SQL Server)</h3>
+   <div style="color:var(--mute);margin:4px 0 8px">Download your data as a SQL Server script (tables and INSERT statements) or a JSON backup. Attachment files stay in the Google Drive folder "IS PROJECTS Attachments"; their names and Drive IDs are exported in the Files table.</div>
+   <div class="acts" style="justify-content:flex-start"><button class="btn" id="xs" type="button">Download SQL Server script (.sql)</button><button class="btn sec" id="xj" type="button">Download JSON backup</button></div>
+   <h3 style="margin-top:16px">Transfer directly to SQL Server</h3><div style="color:var(--mute);margin:4px 0 8px">Works only if your SQL Server is reachable from the internet and allows Google's connections. Otherwise use the .sql script. The password is used for this transfer only and is not saved.</div>
+   <div class="g2"><div><label>Server / host</label><input id="xh"></div><div><label>Port</label><input id="xp" value="1433"></div><div><label>Database (must already exist)</label><input id="xd"></div><div><label>Login</label><input id="xu" autocomplete="off"></div>
+   <div><label>Password</label><input id="xw" type="password" autocomplete="off"></div><div><label style="font-weight:400"><input type="checkbox" id="xc" style="width:auto"> Trust the server certificate</label><label style="font-weight:400"><input type="checkbox" id="xr" style="width:auto"> Replace existing rows in these tables</label></div></div>
+   <div class="acts"><button class="btn" id="xt" type="button">Transfer now</button></div></div>
   </section>
  </main>
 </div>
@@ -272,8 +281,8 @@ function forceOut(q){document.body.classList.remove("drawer");S.token=S.user=nul
 $("lo").onclick=()=>forceOut(true);
 async function start(){const u=S.user;$("login").classList.add("hide");$("app").classList.remove("hide");
   $("un").textContent=u.name;$("ur").textContent=u.role+(u.dept?" - "+u.dept:"")+(u.role!=="Admin"&&u.branch?" - "+(u.branch.length>26?u.branch.slice(0,26)+"...":u.branch):"");
-  $("navset").classList.toggle("hide",u.role!=="Admin");$("navset").previousElementSibling.classList.toggle("hide",u.role!=="Admin");$("nb").classList.toggle("hide",!["Admin","ISD","User"].includes(u.role));view("home");await load();poll();if(!window.PT)window.PT=setInterval(poll,90000)}
-document.querySelector("aside").onclick=e=>{const a=e.target.closest("a");if(!a)return;document.body.classList.remove("drawer");if(a.id==="so")return forceOut(true);if(a.dataset.m)S.mon=a.dataset.m;view(a.dataset.v)};
+  $("navset").classList.toggle("hide",u.role!=="Admin");$("navset").previousElementSibling.classList.toggle("hide",u.role!=="Admin");$("nb").classList.toggle("hide",!["Admin","ISD","User"].includes(u.role));view("home");await load();poll();if(!window.PT)window.PT=setInterval(poll,90000);if(u.mustChange)changePwDlg(true)}
+document.querySelector("aside").onclick=e=>{const a=e.target.closest("a");if(!a)return;document.body.classList.remove("drawer");if(a.id==="so")return forceOut(true);if(a.id==="pw")return changePwDlg(false);if(a.dataset.m)S.mon=a.dataset.m;view(a.dataset.v)};
 $("mbtn").onclick=()=>document.body.classList.toggle("drawer");$("dov").onclick=()=>document.body.classList.remove("drawer");$("lo2").onclick=()=>forceOut(true);$("bell").onclick=$("bell2").onclick=openAlerts;
 function mark(){document.querySelectorAll("aside a").forEach(a=>a.classList.toggle("on",a.dataset.v===V&&(V!=="isrf"||a.dataset.m===S.mon)));
   $("vt").textContent=V==="isrf"?mon(S.mon).name:{home:"Home",rep:"Reports",set:"Setup and users"}[V];$("nb").textContent="New "+(S.mon||"")}
@@ -383,6 +392,36 @@ function signupForm(){modal(`<h2>Create an account</h2><div style="color:var(--m
     modal(`<h2>Request sent</h2><p>${esc(m)}</p><div class="acts"><button class="btn" onclick="closeM()">OK</button></div>`)}
    catch(e){$("ze").textContent=e.message;$("zs").disabled=false}}}
 $("lsa").onclick=e=>{e.preventDefault();signupForm()};
+/* ---- passwords ---- */
+function forgotDlg(){modal(`<h2>Forgot password</h2><div style="color:var(--mute)">Enter your username or email. The administrator is notified and will send you a temporary password by email or text.</div><label>Username or email</label><input id="fg1"><div class="err" id="fge"></div>
+  <div class="acts"><button class="btn sec" onclick="closeM()">Cancel</button><button class="btn" id="fg2">Notify administrator</button></div>`);
+  $("fg2").onclick=async()=>{try{const m=await api("forgot",{id:$("fg1").value.trim()});modal(`<h2>Request sent</h2><p>${esc(m)}</p><div class="acts"><button class="btn" onclick="closeM()">OK</button></div>`)}catch(e){$("fge").textContent=e.message}}}
+$("lfg").onclick=e=>{e.preventDefault();forgotDlg()};
+function changePwDlg(force){modal(`<h2>${force?"Set a new password":"Change password"}</h2><div style="color:var(--mute)">${force?"You signed in with a temporary password. Choose a new one to continue.":"Enter your current password and a new one."}</div>
+  <label>Current${force?" (temporary)":""} password</label><input id="cp1" type="password" autocomplete="current-password"><label>New password (at least 8 characters)</label><input id="cp2" type="password" autocomplete="new-password"><label>Confirm new password</label><input id="cp3" type="password" autocomplete="new-password"><div class="err" id="cpe"></div>
+  <div class="acts">${force?"":'<button class="btn sec" onclick="closeM()">Cancel</button>'}<button class="btn" id="cp4">Save password</button></div>`);
+  if(force)$("mo").querySelector(".ov").onmousedown=null;
+  $("cp4").onclick=async()=>{if($("cp2").value.length<8)return $("cpe").textContent="New password must be at least 8 characters";if($("cp2").value!==$("cp3").value)return $("cpe").textContent="Passwords do not match";
+   try{const d=await api("changePassword",{old:$("cp1").value,pw:$("cp2").value});S.token=d.token;saveTok(d.token);S.user.mustChange=false;closeM();toast("Password changed")}catch(e){$("cpe").textContent=e.message}}}
+function credDlg(x){const txt=`${BR.name||"IS PROJECTS"}: Hi ${x.name}, your username is ${x.username} and your temporary password is ${x.temp}. Sign in at ${location.href.split("#")[0]} and change it right away.`;
+  modal(`<h2>Temporary password ready</h2><p>${esc(x.name)} (${esc(x.username)}) must choose a new password at the next sign-in.</p><p>Temporary password: <b style="font-size:18px;letter-spacing:.05em">${esc(x.temp)}</b></p><p>${x.emailed?"It was emailed to "+esc(x.email)+".":"Email was not sent (no email on file or mail failed)."}</p>
+  <div class="acts"><button class="btn sec" onclick="closeM()">Close</button><button class="btn sec" id="cd1">Open SMS app</button>${S.cfg.SmsOn?'<button class="btn" id="cd2">Send SMS</button>':""}</div>`);
+  $("cd1").onclick=()=>{location.href="sms:"+String(x.phone).replace(/[^\d+]/g,"")+"?&body="+encodeURIComponent(txt)};
+  if($("cd2"))$("cd2").onclick=async()=>{try{await api("smsRaw",{to:x.phone,message:txt});toast("SMS sent");closeM()}catch(e){toast(e.message)}}}
+$("urp").onclick=async()=>{const u=$("u1").value.trim();if(!u)return toast("Click a user in the table first");if(!confirm("Create a temporary password for "+u+" and send it by email?"))return;
+  try{credDlg(await api("resetPassword",{username:u,link:location.href.split("#")[0]}))}catch(e){toast(e.message)}};
+/* ---- database export ---- */
+const dl=(name,text,type)=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()};
+function sqlOf(tables){const q=s=>"N'"+String(s).replace(/'/g,"''")+"'";let o="-- IS PROJECTS export "+new Date().toISOString()+"\nSET NOCOUNT ON;\nGO\n";
+  tables.forEach(t=>{const cols=t.cols.map(c=>"  ["+c+"] "+(c===t.pk?"NVARCHAR(100) NOT NULL PRIMARY KEY":t.bit.includes(c)?"BIT NULL":"NVARCHAR(MAX) NULL")).join(",\n");
+   o+=`IF OBJECT_ID(N'dbo.${t.name}', N'U') IS NULL\nCREATE TABLE [dbo].[${t.name}] (\n${cols}\n);\nGO\n`;
+   for(let i=0;i<t.rows.length;i+=100)o+=`INSERT INTO [dbo].[${t.name}] (${t.cols.map(c=>"["+c+"]").join(", ")}) VALUES\n`+t.rows.slice(i,i+100).map(r=>"("+r.map((v,j)=>t.bit.includes(t.cols[j])?(v===true||String(v).toUpperCase()==="TRUE"?1:0):q(v)).join(", ")+")").join(",\n")+";\nGO\n"});return o}
+$("xs").onclick=async()=>{try{toast("Preparing export...");dl("is-projects-"+new Date().toISOString().slice(0,10)+".sql","\uFEFF"+sqlOf(await api("export")),"application/sql")}catch(e){toast(e.message)}};
+$("xj").onclick=async()=>{try{toast("Preparing backup...");dl("is-projects-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(await api("export"),null,1),"application/json")}catch(e){toast(e.message)}};
+$("xt").onclick=async()=>{const d={host:$("xh").value.trim(),port:$("xp").value.trim(),db:$("xd").value.trim(),user:$("xu").value.trim(),pass:$("xw").value,trust:$("xc").checked,replace:$("xr").checked};if(!d.host||!d.db||!d.user)return toast("Host, database and login are required");
+  if(!confirm("Transfer all data to "+d.host+" / "+d.db+"?"+(d.replace?"\nExisting rows in these tables will be deleted first.":"")))return;$("xt").disabled=true;toast("Transferring... this can take a minute");
+  try{const o=await api("transferSql",{data:d});$("xw").value="";modal(`<h2>Transfer complete</h2><p>${Object.keys(o).map(k=>esc(k)+": "+o[k]+" rows").join("<br>")}</p><div class="acts"><button class="btn" onclick="closeM()">Close</button></div>`)}catch(e){toast(e.message)}finally{$("xt").disabled=false}};
+const gp=()=>{const a=$("m3").value==="android";document.querySelectorAll(".gp-a").forEach(e=>e.classList.toggle("hide",!a));document.querySelectorAll(".gp-s").forEach(e=>e.classList.toggle("hide",a))};$("m3").onchange=gp;
 /* ---- admin: account requests ---- */
 const accBadge=()=>{const n=ACC.filter(a=>a.Status==="Pending").length;$("sbd").textContent=n;$("sbd").classList.toggle("hide",!n)};
 function approvedDlg(x){const txt=`${BR.name||"IS PROJECTS"}: Hi ${x.name}, your account is approved. Username: ${x.username}. Sign in with the password you created: ${location.href.split("#")[0]}`;
@@ -392,8 +431,9 @@ function approvedDlg(x){const txt=`${BR.name||"IS PROJECTS"}: Hi ${x.name}, your
   if($("at2"))$("at2").onclick=async()=>{try{await api("smsRaw",{to:x.phone,message:txt});toast("SMS sent");closeM()}catch(e){toast(e.message)}}}
 async function fillAccounts(){try{ACC=await api("signups")}catch(e){ACC=[]}accBadge();
   const so='<option value="*">All branches and offices</option>'+areas().map(a=>`<option value="@${esc(a)}">Whole area: ${esc(a)}</option>`).join("")+S.cfg.Branch.map(b=>`<option value="${esc(b.name)}">${esc(b.name)}</option>`).join("");
-  $("acc").innerHTML=ACC.map(a=>{const head=`<b>${esc(a.Name)}</b> (${esc(a.Username)}) <span class="badge ${a.Kind==="existing"?"Rejected":""}">${a.Kind==="existing"?"Existing account":"New"}</span><div class="bm">${esc(a.Email)} - ${esc(a.Phone)}${a.Branch?" - requested: "+esc(a.Branch):""}${a.Note?"<br>"+esc(a.Note):""}</div>`;
+  $("acc").innerHTML=ACC.map(a=>{const head=`<b>${esc(a.Name)}</b> (${esc(a.Username)}) <span class="badge ${a.Kind==="existing"||a.Kind==="reset"?"Rejected":""}">${a.Kind==="existing"?"Existing account":a.Kind==="reset"?"Password reset":"New"}</span><div class="bm">${esc(a.Email)} - ${esc(a.Phone)}${a.Branch?" - requested: "+esc(a.Branch):""}${a.Note?"<br>"+esc(a.Note):""}</div>`;
    if(a.Status!=="Pending")return`<div class="bm" style="padding:4px 0">${esc(a.Name)} (${esc(a.Username)}) - ${esc(a.Status)}${a.Reason?": "+esc(a.Reason):""}</div>`;
+   if(a.Kind==="reset")return`<div class="fr ac" data-id="${esc(a.ID)}" style="display:block">${head}<div class="bm" style="color:var(--amber)">Forgot password. Send a temporary password by email, then text it if needed.</div><div class="acts2"><button class="btn sec sm ad" type="button">Dismiss</button><button class="btn sm ap" type="button">Send temporary password</button></div></div>`;
    if(a.Kind==="existing")return`<div class="fr ac" data-id="${esc(a.ID)}" style="display:block">${head}<div class="bm" style="color:var(--amber)">This username or email already belongs to the account "${esc(a.ExistingUser)}". Update that account with these details, or dismiss.</div><div class="acts2"><button class="btn sec sm ad" type="button">Dismiss</button><button class="btn sm au" type="button">Update existing account</button></div></div>`;
    return`<div class="fr ac" data-id="${esc(a.ID)}" style="display:block">${head}<div class="g2"><div><label>Role</label><select class="ar1"><option>User</option><option>Approver</option><option>ISD</option><option>Dept</option><option>Reviewer</option><option>Viewer</option><option>Admin</option></select></div>
    <div><label>Department (for Dept role)</label><select class="ar3"><option value=""></option>${opts(S.cfg.Dept)}</select></div><div style="grid-column:1/-1"><label>Visible branches / offices</label><select class="ar2" multiple size="5">${so}</select></div></div>
@@ -401,6 +441,7 @@ async function fillAccounts(){try{ACC=await api("signups")}catch(e){ACC=[]}accBa
   $("acc").querySelectorAll(".ac").forEach(c=>{const a=ACC.find(x=>x.ID===c.dataset.id),q=s=>c.querySelector(s),go=async(act,p,m)=>{try{await api(act,{id:a.ID,...p});toast(m);fillAccounts();loadSet2()}catch(e){toast(e.message)}};
    if(q(".ar2"))[...q(".ar2").options].forEach(o=>{if(o.value===a.Branch)o.selected=true});
    if(q(".aa"))q(".aa").onclick=async()=>{try{const x=await api("approveSignup",{id:a.ID,data:{role:q(".ar1").value,dept:q(".ar3").value,branch:[...q(".ar2").selectedOptions].map(o=>o.value).join(",")},link:location.href.split("#")[0]});approvedDlg(x);fillAccounts();loadSet2()}catch(e){toast(e.message)}};
+   if(q(".ap"))q(".ap").onclick=async()=>{try{const x=await api("resetPassword",{username:a.ExistingUser,id:a.ID,link:location.href.split("#")[0]});credDlg(x);fillAccounts();loadSet2()}catch(e){toast(e.message)}};
    if(q(".ax"))q(".ax").onclick=()=>{const r=prompt("Reason (optional)");if(r!==null)go("rejectSignup",{reason:r},"Request rejected")};
    if(q(".au"))q(".au").onclick=()=>confirm("Replace the name, email and contact number of \""+a.ExistingUser+"\" with these details? The password is not changed.")&&go("applyExisting",{},"Account updated");
    if(q(".ad"))q(".ad").onclick=()=>go("dismissSignup",{},"Dismissed")})}
@@ -545,7 +586,7 @@ $("sx").onclick=async()=>{if(!confirm("Move attachments of old completed request
 let LOGO;
 const logoOf=f=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const k=Math.min(1,240/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);let d=c.toDataURL("image/png");if(d.length>45000)d=c.toDataURL("image/jpeg",.8);d.length>45000?rej(new Error("Logo is too detailed. Use a simpler or smaller image.")):res(d)};im.onerror=()=>rej(new Error("Cannot read this image"));im.src=URL.createObjectURL(f)});
 function fillBrand(){const b=S.cfg,u=b.UI||{};$("b1").value=b.Company||"";$("b3").value=u.accent||"#0f766e";$("b4").value=u.sbbg||(u.sidebar==="light"?"#ffffff":"#10243a");$("b10").value=u.pagebg||"#eef2f7";$("b11").value=u.ink||"#10243a";$("b12").value=u.hero||"#0b1d31";$("b13").value=u.prc||"#10243a";$("b5").value=u.density||"comfortable";$("b14").value=u.nav||"side";$("b6").value=u.corners||"rounded";$("b7").value=u.paper||"A4";$("b8").value=u.footer||"";LOGO=undefined;
-  $("b9").innerHTML=b.Logo?`<img src="${b.Logo}" style="height:40px">`:"No logo";$("mst").textContent=b.SmsOn?"SMS gateway is connected.":"SMS gateway not connected. Users can still open SMS in their phone's Messages app."}
+  $("b9").innerHTML=b.Logo?`<img src="${b.Logo}" style="height:40px">`:"No logo";$("m3").value=b.SmsOn?(b.SmsProvider||"semaphore"):"android";gp();$("mst").textContent=b.SmsOn?"SMS gateway is connected.":"SMS gateway not connected. Users can still open SMS in their phone's Messages app."}
 const PZ={"Ocean":["#0f766e","#10243a","#eef2f7","#10243a","#0b1d31","#10243a"],"Forest":["#15803d","#14352a","#eef4ef","#14352a","#0f2a20","#14352a"],"Burgundy":["#9f1239","#3b0f1e","#f7eef0","#3b0f1e","#2d0b17","#3b0f1e"],"Navy":["#1d4ed8","#0f1f4a","#eef2fb","#0f1f4a","#0b1638","#0f1f4a"],"Slate":["#475569","#1e293b","#f1f5f9","#1e293b","#0f172a","#1e293b"],"Light":["#0f766e","#ffffff","#f3f6f9","#10243a","#0b1d31","#10243a"]};
 $("pz").innerHTML=Object.keys(PZ).map(k=>`<button class="btn sec sm" type="button" data-p="${k}"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${PZ[k][0]};margin-right:6px"></span>${k}</button>`).join("");
 $("pz").onclick=e=>{const k=e.target.closest("[data-p]");if(!k)return;PZ[k.dataset.p].forEach((v,i)=>$(["b3","b4","b10","b11","b12","b13"][i]).value=v)};
@@ -553,7 +594,7 @@ $("b2").onchange=async()=>{const f=$("b2").files[0];if(!f)return;try{LOGO=await 
 $("bx").onclick=()=>{LOGO="";$("b9").textContent="No logo"};
 $("bs2").onclick=async()=>{const d={company:$("b1").value.trim(),ui:{accent:$("b3").value,sbbg:$("b4").value,pagebg:$("b10").value,ink:$("b11").value,hero:$("b12").value,prc:$("b13").value,density:$("b5").value,corners:$("b6").value,nav:$("b14").value,paper:$("b7").value,footer:$("b8").value.trim()}};if(LOGO!==undefined)d.logo=LOGO;
   try{await api("saveBrand",{data:d});toast("Appearance saved");await load();fillBrand()}catch(e){toast(e.message)}};
-$("ms").onclick=async()=>{try{await api("saveSms",{key:$("m1").value,sender:$("m2").value});$("m1").value="";toast("Messaging saved");await load();fillBrand()}catch(e){toast(e.message)}};
+$("ms").onclick=async()=>{try{await api("saveSms",{provider:$("m3").value,key:$("m1").value,sender:$("m2").value,user:$("m4").value,pass:$("m5").value});$("m1").value=$("m4").value=$("m5").value="";toast("Messaging saved");await load();fillBrand()}catch(e){toast(e.message)}};
 $("mx").onclick=async()=>{try{await api("saveSms",{clear:true});toast("Gateway disconnected");await load();fillBrand()}catch(e){toast(e.message)}};
 const lines=v=>v.split("\n").map(s=>s.trim()).filter(Boolean);
 $("sc").onclick=async()=>{const Branch=lines($("sb").value).map(l=>{const p=l.split("|").map(x=>x.trim());return p.length>1?{area:p[0],name:p[1]}:{area:"",name:p[0]}});

@@ -1,14 +1,14 @@
 /* IS PROJECTS - ISRF backend v2. After pasting: run repair() once, then Deploy > Manage deployments > New version. Login: admin / admin123 */
 const SS = SpreadsheetApp.getActiveSpreadsheet();
 const H = ['ID','Date','Area','Branch','ErrorType','DocsDamage','ProblemDetails','RequestedBy','ApprovedBy','Decision','ForwardTo','Notes','AnsweredBy','ReviewedBy','Status','CreatedBy','Monitoring','Data'];
-const UH = ['Username','Name','Role','Hash','Active','Branch','Dept','Email'], CH = ['Type','Value','Area'];
+const UH = ['Username','Name','Role','Hash','Active','Branch','Dept','Email','Phone','MustChange'], CH = ['Type','Value','Area'];
 
 function sh(n, h) { if (!n || !h) throw new Error('Do not run sh() directly.'); let s = SS.getSheetByName(n); if (!s) { s = SS.insertSheet(n); s.appendRow(h); s.setFrozenRows(1); } return s; }
 function hash(p) { return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'isrf:' + p).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join(''); }
 function setup() {
   sh('ISRF', H).getRange('B:B').setNumberFormat('@');
-  const u = sh('Users', UH); u.getRange('A:D').setNumberFormat('@');
-  if (u.getLastRow() < 2) u.appendRow(['admin','Administrator','Admin',hash('admin123'),true,'','','']);
+  const u = sh('Users', UH); u.getRange('A:D').setNumberFormat('@'); u.getRange('I:I').setNumberFormat('@');
+  if (u.getLastRow() < 2) u.appendRow(['admin','Administrator','Admin',hash('admin123'),true,'','','','','']);
   const c = sh('Config', CH);
   if (c.getLastRow() < 2) {
     [['Area 1','Main Branch'],['Area 1','North Branch'],['Area 2','South Branch']].forEach(b => c.appendRow(['Branch', b[1], b[0]]));
@@ -19,8 +19,8 @@ function setup() {
 }
 function resetAdmin() {
   setup(); const u = SS.getSheetByName('Users'), ex = rows('Users').find(x => String(x.Username).toLowerCase() === 'admin');
-  const row = ['admin','Administrator','Admin',hash('admin123'),true,'','',''];
-  if (ex) u.getRange(ex._row, 1, 1, 8).setValues([row]); else u.appendRow(row);
+  const row = ['admin','Administrator','Admin',hash('admin123'),true,'','','','',''];
+  if (ex) u.getRange(ex._row, 1, 1, 10).setValues([row]); else u.appendRow(row);
 }
 /* Rebuilds any tab whose header row is outdated (that tab is cleared), then resets admin */
 function repair() {
@@ -39,6 +39,7 @@ function upg(name, hdr) {
     if (cur[i] === hdr[i]) continue;
     if (cur[i] !== '') return;
     s.getRange(1, i + 1).setValue(hdr[i]);
+    if (name === 'Users' && hdr[i] === 'Phone') s.getRange('I:I').setNumberFormat('@');
     if (name === 'ISRF' && hdr[i] === 'Monitoring' && s.getLastRow() > 1) s.getRange(2, i + 1, s.getLastRow() - 1, 1).setValue('ISRF');
   }
 }
@@ -68,7 +69,7 @@ function config() {
     else if (r.Type === 'Setting') { if (r.Value === 'Company') c.Company = String(r.Area); else if (r.Value === 'Logo') c.Logo = String(r.Area); else if (r.Value === 'UI') { try { c.UI = JSON.parse(r.Area); } catch (e) {} } }
     else if (c[r.Type]) c[r.Type].push(r.Value);
   });
-  c.Settings = settings(); c.SmsOn = !!PropertiesService.getScriptProperties().getProperty('SMS_KEY');
+  c.Settings = settings(); { const P = PropertiesService.getScriptProperties(); c.SmsProvider = P.getProperty('SMS_PROVIDER') || 'semaphore'; c.SmsOn = !!(c.SmsProvider === 'android' ? P.getProperty('ANDROID_USER') : P.getProperty('SMS_KEY')); }
   if (!c.Monitor.length) c.Monitor.push({code: 'ISRF', name: 'Information System Request Form'});
   return c;
 }
@@ -135,7 +136,7 @@ function readToken(t) {
   const d = JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(parts[0])).getDataAsString()); if (d.e < Date.now()) throw bad;
   const u = rows('Users').find(x => String(x.Username) === d.u);
   if (!u || String(u.Hash).slice(0, 10) !== d.h || String(u.Active).toUpperCase() === 'FALSE') throw bad;
-  return {username: u.Username, name: u.Name, role: u.Role, branch: u.Branch || '', dept: u.Dept || ''};
+  return {username: u.Username, name: u.Name, role: u.Role, branch: u.Branch || '', dept: u.Dept || '', mustChange: String(u.MustChange) === 'Y'};
 }
 function imgGet(k) { isheet(); return rows('Images').filter(x => x.Key === k).sort((a, b) => a.Idx - b.Idx).map(x => x.Chunk).join(''); }
 function setImg(k, v) {
@@ -187,16 +188,109 @@ function notifyMsg(rec, s, kind, text, link) {
   return to.length;
 }
 
+/* ---- account requests (sign-up) ---- */
+const SGH = ['ID','At','Username','Name','Email','Phone','Hash','Branch','Note','Status','Kind','ExistingUser','Reason'];
+function ssheet() { const had = SS.getSheetByName('Signups'), s = sh('Signups', SGH); if (!had) s.getRange('B:I').setNumberFormat('@'); return s; }
+function mailTo(to, subject, html) { if (!to) return false; try { MailApp.sendEmail({to, subject, htmlBody: html, body: html.replace(/<[^>]+>/g, ' '), name: config().Company || 'IS PROJECTS'}); return true; } catch (e) { return false; } }
+function notifyAdmins(subject, html) {
+  const to = rows('Users').filter(u => u.Role === 'Admin' && u.Email && String(u.Active).toUpperCase() !== 'FALSE').map(u => u.Email); if (!to.length) return 0;
+  return mailTo(to.join(','), subject, html) ? to.length : 0;
+}
+const EH = x => String(x == null ? '' : x).replace(/[&<>]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]));
+function e164(n) { n = String(n).replace(/[^\d+]/g, ''); if (/^0\d{10}$/.test(n)) return '+63' + n.slice(1); if (/^63\d{10}$/.test(n)) return '+' + n; return n; }
+function gatewaySms(to, message) {
+  const P = PropertiesService.getScriptProperties(), prov = P.getProperty('SMS_PROVIDER') || 'semaphore';
+  const nums = String(to || '').split(/[,;\s]+/).filter(x => /^\+?\d{10,13}$/.test(x)); if (!nums.length || nums.length > 5) throw new Error('Enter 1 to 5 valid mobile numbers');
+  const text = String(message || '').slice(0, 459);
+  if (prov === 'android') {
+    const u = P.getProperty('ANDROID_USER'), p = P.getProperty('ANDROID_PASS'); if (!u || !p) throw new Error('SMS gateway is not configured');
+    const res = UrlFetchApp.fetch('https://api.sms-gate.app/3rdparty/v1/messages', {method: 'post', contentType: 'application/json', headers: {Authorization: 'Basic ' + Utilities.base64Encode(u + ':' + p)}, payload: JSON.stringify({message: text, phoneNumbers: nums.map(e164)}), muteHttpExceptions: true});
+    if (res.getResponseCode() >= 300) throw new Error('SMS gateway error ' + res.getResponseCode() + ': ' + res.getContentText().slice(0, 120)); return nums.length;
+  }
+  const key = P.getProperty('SMS_KEY'); if (!key) throw new Error('SMS gateway is not configured');
+  const pl = {apikey: key, number: nums.join(','), message: text}; if (P.getProperty('SMS_SENDER')) pl.sendername = P.getProperty('SMS_SENDER');
+  const res = UrlFetchApp.fetch('https://api.semaphore.co/api/v4/messages', {method: 'post', payload: pl, muteHttpExceptions: true});
+  if (res.getResponseCode() >= 300) throw new Error('SMS gateway error: ' + res.getContentText().slice(0, 120)); return nums.length;
+}
+
+/* ---- database export / transfer to SQL Server ---- */
+const SQLT = {ISRF: {pk: 'ID'}, Users: {pk: 'Username', bit: ['Active']}, Messages: {pk: 'ID'}, Signups: {pk: 'ID'}, Files: {pk: 'FileId'}, Config: {}};
+function exportAll() {
+  return ['ISRF','Users','Config','Messages','Signups','Files'].filter(n => SS.getSheetByName(n)).map(n => {
+    const v = SS.getSheetByName(n).getDataRange().getValues(), cols = v.shift().map(String), t = SQLT[n] || {};
+    const out = v.filter(r => r.join('') !== '').map(r => r.map((x, j) => x instanceof Date ? Utilities.formatDate(x, Session.getScriptTimeZone(), 'yyyy-MM-dd') : (n === 'Signups' && cols[j] === 'Hash') ? '' : (x === true || x === false) ? x : String(x == null ? '' : x)));
+    return {name: n, cols, rows: out, pk: t.pk || null, bit: t.bit || []};
+  });
+}
+function transferSql(p) {
+  const host = String(p.host || '').trim(), db = String(p.db || '').trim();
+  if (!host || !db || !p.user) throw new Error('Host, database and user are required');
+  if (!/^[A-Za-z0-9._\-]+$/.test(host) || !/^[A-Za-z0-9_\-]+$/.test(db)) throw new Error('Invalid host or database name');
+  const conn = Jdbc.getConnection('jdbc:sqlserver://' + host + ':' + (Number(p.port) || 1433) + ';databaseName=' + db + ';encrypt=true;trustServerCertificate=' + (p.trust ? 'true' : 'false'), p.user, p.pass), out = {};
+  conn.setAutoCommit(false);
+  try {
+    const st = conn.createStatement();
+    exportAll().forEach(t => {
+      const defs = t.cols.map(c => '[' + c + '] ' + (c === t.pk ? 'NVARCHAR(100) NOT NULL PRIMARY KEY' : t.bit.indexOf(c) >= 0 ? 'BIT NULL' : 'NVARCHAR(MAX) NULL')).join(', ');
+      st.execute("IF OBJECT_ID(N'dbo." + t.name + "', N'U') IS NULL CREATE TABLE [dbo].[" + t.name + '] (' + defs + ')');
+      if (p.replace) st.execute('DELETE FROM [dbo].[' + t.name + ']');
+      out[t.name] = t.rows.length; if (!t.rows.length) return;
+      const ps = conn.prepareStatement('INSERT INTO [dbo].[' + t.name + '] (' + t.cols.map(c => '[' + c + ']').join(', ') + ') VALUES (' + t.cols.map(() => '?').join(', ') + ')');
+      t.rows.forEach((r, k) => { r.forEach((v, j) => { if (t.bit.indexOf(t.cols[j]) >= 0) ps.setBoolean(j + 1, v === true || String(v).toUpperCase() === 'TRUE'); else ps.setString(j + 1, String(v)); }); ps.addBatch(); if ((k + 1) % 200 === 0) ps.executeBatch(); });
+      ps.executeBatch(); ps.close();
+    });
+    conn.commit();
+  } catch (e) { try { conn.rollback(); } catch (x) {} throw e; } finally { conn.close(); }
+  return out;
+}
+
 function handle(r) {
   const cache = CacheService.getScriptCache();
   if (r.action === 'login') {
     const u = rows('Users').find(x => String(x.Username).toLowerCase() === String(r.username).toLowerCase());
     if (!u || String(u.Hash).trim() !== hash(String(r.password)) || String(u.Active).toUpperCase() === 'FALSE') throw new Error('Wrong username or password');
-    const s = {username: u.Username, name: u.Name, role: u.Role, branch: u.Branch || '', dept: u.Dept || ''}; return {token: makeToken(u), user: s};
+    const s = {username: u.Username, name: u.Name, role: u.Role, branch: u.Branch || '', dept: u.Dept || '', mustChange: String(u.MustChange) === 'Y'}; return {token: makeToken(u), user: s};
   }
   if (r.action === 'brand') {
     const b = config(); let L = {}; try { L = JSON.parse(cfgGet('Login') || '{}'); } catch (e) {}
-    return {Company: b.Company, Logo: b.Logo, UI: b.UI, Login: L, LoginImg: imgGet('login')};
+    return {Company: b.Company, Logo: b.Logo, UI: b.UI, Login: L, LoginImg: imgGet('login'), Branches: b.Branch.map(x => x.name)};
+  }
+  if (r.action === 'forgot') {
+    const k = String(r.id || '').trim().toLowerCase(), msg = 'If an account matches, the administrator has been notified and will send you a temporary password by email or text.';
+    if (!k || k.length > 80) throw new Error('Enter your username or email');
+    if (cache.get('fg_' + k)) return msg; cache.put('fg_' + k, '1', 60);
+    const u = rows('Users').find(x => String(x.Username).toLowerCase() === k || (x.Email && String(x.Email).toLowerCase() === k));
+    if (u && String(u.Active).toUpperCase() !== 'FALSE') {
+      ssheet();
+      if (!rows('Signups').some(x => x.Status === 'Pending' && x.Kind === 'reset' && x.ExistingUser === u.Username)) {
+        SS.getSheetByName('Signups').appendRow(['S' + Date.now().toString(36), new Date().toISOString(), u.Username, u.Name, u.Email || '', u.Phone || '', '', '', '', 'Pending', 'reset', u.Username, '']);
+        notifyAdmins('Password reset requested: ' + u.Username, '<div style="font-family:Arial,sans-serif;max-width:560px;color:#10243a"><h3>Password reset request</h3><p><b>' + EH(u.Name) + '</b> (' + EH(u.Username) + ') forgot the password.<br>Open Setup and users > Account requests and choose Send temporary password.</p></div>');
+      }
+    }
+    return msg;
+  }
+  if (r.action === 'signup') {
+    const d = r.data || {}; let L = {}; try { L = JSON.parse(cfgGet('Login') || '{}'); } catch (e) {}
+    if (L.signup === false) throw new Error('Account requests are turned off. Please contact the administrator.');
+    const msg = 'Request received. You will be notified by email or text once the administrator approves your account. If an account already exists for these details, the administrator is notified so it can be updated.';
+    if (d.website) return msg;
+    const un = String(d.username || '').trim(), nm = String(d.name || '').trim(), em = String(d.email || '').trim().toLowerCase(), ph = String(d.phone || '').replace(/[^\d+]/g, ''), pw = String(d.password || '');
+    if (!/^[A-Za-z0-9._-]{3,30}$/.test(un)) throw new Error('Username must be 3 to 30 letters, numbers, dots, dashes or underscores');
+    if (nm.length < 3) throw new Error('Enter your full name');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) throw new Error('Enter a valid email address');
+    if (!/^\+?\d{10,13}$/.test(ph)) throw new Error('Enter a valid contact number');
+    if (pw.length < 8) throw new Error('Password must be at least 8 characters');
+    if (cache.get('su_' + un.toLowerCase())) throw new Error('Please wait a minute before trying again');
+    cache.put('su_' + un.toLowerCase(), '1', 60);
+    ssheet(); const pend = rows('Signups').filter(x => x.Status === 'Pending');
+    if (pend.length >= 60) throw new Error('Too many pending requests. Please contact the administrator.');
+    if (pend.some(x => String(x.Username).toLowerCase() === un.toLowerCase() || String(x.Email).toLowerCase() === em)) return msg;
+    const ex = rows('Users').find(x => String(x.Username).toLowerCase() === un.toLowerCase() || (x.Email && String(x.Email).toLowerCase() === em));
+    SS.getSheetByName('Signups').appendRow(['S' + Date.now().toString(36), new Date().toISOString(), un, nm, em, ph, ex ? '' : hash(pw), String(d.branch || '').slice(0, 120), String(d.note || '').slice(0, 300), 'Pending', ex ? 'existing' : 'new', ex ? ex.Username : '', '']);
+    notifyAdmins(ex ? 'Existing account needs an update: ' + un : 'New account request: ' + un,
+      '<div style="font-family:Arial,sans-serif;max-width:560px;color:#10243a"><h3>' + (ex ? 'An existing account asked for access or an update' : 'New account request') + '</h3><p><b>' + EH(nm) + '</b> (' + EH(un) + ')<br>Email: ' + EH(em) + '<br>Contact: ' + EH(ph) + '<br>Branch: ' + EH(d.branch || '-') + '<br>Note: ' + EH(d.note || '-') + '</p>'
+      + (ex ? '<p>This username or email already belongs to the account <b>' + EH(ex.Username) + '</b>. Review it under Setup and users > Account requests to update or modify the account.</p>' : '<p>Open Setup and users > Account requests to approve or reject it.</p>') + '</div>');
+    return msg;
   }
   const s = readToken(r.token), adm = s.role === 'Admin'; upgrade();
   switch (r.action) {
@@ -294,18 +388,13 @@ function handle(r) {
       if (r.attach) msg.attachments = frows().filter(f => f.RecordID === rec.ID).slice(0, 5).map(f => DriveApp.getFileById(f.FileId).getBlob().setName(f.Name));
       MailApp.sendEmail(msg); return to.length;
     }
-    case 'sms': {
-      need(s, ['Admin','ISD','User','Approver','Dept','Reviewer']); findS(s, r.id);
-      const P = PropertiesService.getScriptProperties(), key = P.getProperty('SMS_KEY'); if (!key) throw new Error('SMS gateway is not configured');
-      const nums = String(r.to || '').split(/[,;\s]+/).filter(x => /^\+?\d{10,13}$/.test(x)); if (!nums.length || nums.length > 5) throw new Error('Enter 1 to 5 valid mobile numbers');
-      const pl = {apikey: key, number: nums.join(','), message: String(r.message || '').slice(0, 459)}; if (P.getProperty('SMS_SENDER')) pl.sendername = P.getProperty('SMS_SENDER');
-      const res = UrlFetchApp.fetch('https://api.semaphore.co/api/v4/messages', {method: 'post', payload: pl, muteHttpExceptions: true});
-      if (res.getResponseCode() >= 300) throw new Error('SMS gateway error: ' + res.getContentText().slice(0, 120)); return nums.length;
-    }
+    case 'sms': need(s, ['Admin','ISD','User','Approver','Dept','Reviewer']); findS(s, r.id); return gatewaySms(r.to, r.message);
     case 'saveSms': {
       need(s, ['Admin']); const P = PropertiesService.getScriptProperties();
-      if (r.clear) { P.deleteProperty('SMS_KEY'); P.deleteProperty('SMS_SENDER'); return true; }
-      if (r.key) P.setProperty('SMS_KEY', String(r.key).trim()); P.setProperty('SMS_SENDER', String(r.sender || '').trim()); return true;
+      if (r.clear) { ['SMS_KEY','SMS_SENDER','SMS_PROVIDER','ANDROID_USER','ANDROID_PASS'].forEach(k => P.deleteProperty(k)); return true; }
+      P.setProperty('SMS_PROVIDER', r.provider === 'android' ? 'android' : 'semaphore');
+      if (r.key) P.setProperty('SMS_KEY', String(r.key).trim()); if (r.user) P.setProperty('ANDROID_USER', String(r.user).trim()); if (r.pass) P.setProperty('ANDROID_PASS', String(r.pass).trim());
+      P.setProperty('SMS_SENDER', String(r.sender || '').trim()); return true;
     }
     case 'saveBrand': {
       need(s, ['Admin']); const d = r.data;
@@ -345,6 +434,57 @@ function handle(r) {
       rec.Notes = JSON.stringify(n); rec.Status = ''; rec.Status = status(rec); save(rec);
       addMsg(rec.ID, s, 'return', 'Returned for ' + label + (d.reason ? ': ' + d.reason : '')); return rec.Status;
     }
+    case 'signups': {
+      need(s, ['Admin']); ssheet(); const list = rows('Signups').map(x => ({ID: x.ID, At: x.At, Username: x.Username, Name: x.Name, Email: x.Email, Phone: x.Phone, Branch: x.Branch, Note: x.Note, Status: x.Status, Kind: x.Kind, ExistingUser: x.ExistingUser, Reason: x.Reason}));
+      return list.filter(x => x.Status === 'Pending').concat(list.filter(x => x.Status !== 'Pending').slice(-10).reverse());
+    }
+    case 'approveSignup': {
+      need(s, ['Admin']); ssheet(); const x = rows('Signups').find(y => y.ID === r.id), d = r.data || {};
+      if (!x || x.Status !== 'Pending' || x.Kind !== 'new') throw new Error('This request is no longer pending');
+      if (['Admin','ISD','User','Approver','Dept','Reviewer','Viewer'].indexOf(d.role) < 0) throw new Error('Choose a role');
+      if (rows('Users').some(u => String(u.Username).toLowerCase() === String(x.Username).toLowerCase())) throw new Error('That username now exists. Dismiss this request and update the existing account.');
+      SS.getSheetByName('Users').appendRow([x.Username, x.Name, d.role, x.Hash, true, d.branch || '', d.dept || '', x.Email, x.Phone, '']);
+      const sg = SS.getSheetByName('Signups'); sg.getRange(x._row, 7).setValue(''); sg.getRange(x._row, 10).setValue('Approved');
+      const cf = config(), link = /^https:\/\//.test(r.link || '') ? r.link : '';
+      const emailed = mailTo(x.Email, 'Your account is approved - ' + (cf.Company || 'IS PROJECTS'),
+        '<div style="font-family:Arial,sans-serif;max-width:560px;color:#10243a"><h3>' + EH(cf.Company || 'IS PROJECTS') + '</h3><p>Hello ' + EH(x.Name) + ', your account has been approved.</p><p>Username: <b>' + EH(x.Username) + '</b><br>Role: ' + EH(d.role) + '<br>Sign in with the password you chose when you requested the account.</p>' + (link ? '<p><a href="' + EH(link) + '">Open the system</a></p>' : '') + '</div>');
+      return {emailed, username: x.Username, name: x.Name, email: x.Email, phone: x.Phone};
+    }
+    case 'rejectSignup': {
+      need(s, ['Admin']); ssheet(); const x = rows('Signups').find(y => y.ID === r.id); if (!x || x.Status !== 'Pending') throw new Error('This request is no longer pending');
+      const sg = SS.getSheetByName('Signups'); sg.getRange(x._row, 7).setValue(''); sg.getRange(x._row, 10).setValue('Rejected'); sg.getRange(x._row, 13).setValue(String(r.reason || '').slice(0, 200));
+      const emailed = mailTo(x.Email, 'Your account request', '<div style="font-family:Arial,sans-serif;max-width:560px;color:#10243a"><p>Hello ' + EH(x.Name) + ', your account request was not approved.' + (r.reason ? '<br>Reason: ' + EH(r.reason) : '') + '</p><p>Please contact the administrator if you need help.</p></div>');
+      return {emailed};
+    }
+    case 'applyExisting': {
+      need(s, ['Admin']); ssheet(); const x = rows('Signups').find(y => y.ID === r.id); if (!x || x.Status !== 'Pending' || x.Kind !== 'existing') throw new Error('This request is no longer pending');
+      const u = rows('Users').find(y => String(y.Username) === String(x.ExistingUser)); if (!u) throw new Error('The existing account was not found');
+      const us = SS.getSheetByName('Users'); us.getRange(u._row, 2).setValue(x.Name); us.getRange(u._row, 8, 1, 2).setValues([[x.Email, x.Phone]]);
+      const sg = SS.getSheetByName('Signups'); sg.getRange(x._row, 10).setValue('Approved'); sg.getRange(x._row, 13).setValue('Existing account details updated');
+      const emailed = mailTo(x.Email, 'Your account details were updated', '<div style="font-family:Arial,sans-serif;max-width:560px;color:#10243a"><p>Hello ' + EH(x.Name) + ', the administrator updated the contact details on your account <b>' + EH(u.Username) + '</b>. Your password was not changed.</p></div>');
+      return {emailed};
+    }
+    case 'dismissSignup': { need(s, ['Admin']); ssheet(); const x = rows('Signups').find(y => y.ID === r.id); if (!x) throw new Error('Request not found'); const sg = SS.getSheetByName('Signups'); sg.getRange(x._row, 7).setValue(''); sg.getRange(x._row, 10).setValue('Dismissed'); return true; }
+    case 'smsRaw': need(s, ['Admin']); return gatewaySms(r.to, r.message);
+    case 'changePassword': {
+      const u = rows('Users').find(x => String(x.Username) === s.username);
+      if (!u || String(u.Hash).trim() !== hash(String(r.old || ''))) throw new Error('The current password is wrong');
+      const pw = String(r.pw || ''); if (pw.length < 8) throw new Error('New password must be at least 8 characters'); if (pw === String(r.old)) throw new Error('Choose a different password');
+      const nh = hash(pw), us = SS.getSheetByName('Users'); us.getRange(u._row, 4).setValue(nh); us.getRange(u._row, 10).setValue('');
+      return {token: makeToken({Username: u.Username, Hash: nh})};
+    }
+    case 'resetPassword': {
+      need(s, ['Admin']); const u = rows('Users').find(x => String(x.Username).toLowerCase() === String(r.username || '').toLowerCase()); if (!u) throw new Error('User not found');
+      const ab = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789', dg = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, Utilities.getUuid() + Date.now()); let temp = '';
+      for (let i = 0; i < 10; i++) temp += ab.charAt((dg[i] & 255) % ab.length);
+      const us = SS.getSheetByName('Users'); us.getRange(u._row, 4).setValue(hash(temp)); us.getRange(u._row, 10).setValue('Y');
+      if (r.id) { ssheet(); const x = rows('Signups').find(y => y.ID === r.id); if (x) { SS.getSheetByName('Signups').getRange(x._row, 10).setValue('Approved'); SS.getSheetByName('Signups').getRange(x._row, 13).setValue('Temporary password sent'); } }
+      const cf = config(), link = /^https:\/\//.test(r.link || '') ? r.link : '';
+      const emailed = mailTo(u.Email, 'Your temporary password - ' + (cf.Company || 'IS PROJECTS'), '<div style="font-family:Arial,sans-serif;max-width:560px;color:#10243a"><h3>' + EH(cf.Company || 'IS PROJECTS') + '</h3><p>Hello ' + EH(u.Name) + ', the administrator reset your password.</p><p>Username: <b>' + EH(u.Username) + '</b><br>Temporary password: <b>' + EH(temp) + '</b></p><p>You will be asked to choose a new password when you sign in.</p>' + (link ? '<p><a href="' + EH(link) + '">Open the system</a></p>' : '') + '</div>');
+      return {temp, emailed, username: u.Username, name: u.Name, email: u.Email || '', phone: u.Phone || ''};
+    }
+    case 'export': need(s, ['Admin']); return exportAll();
+    case 'transferSql': need(s, ['Admin']); return transferSql(r.data || {});
     case 'saveLogin': {
       need(s, ['Admin']); const d = r.data;
       if (d.img !== undefined && d.img !== null) setImg('login', d.img);
@@ -367,11 +507,14 @@ function handle(r) {
       rows('Config').filter(x => x.Type === 'Setting').forEach(x => v.push(['Setting', x.Value, x.Area]));
       c.clear(); c.getRange(1, 1, v.length, 3).setValues(v); return true;
     }
-    case 'listUsers': need(s, ['Admin']); return rows('Users').map(u => ({username: u.Username, name: u.Name, role: u.Role, active: String(u.Active).toUpperCase() !== 'FALSE', branch: u.Branch, dept: u.Dept, email: u.Email || ''}));
+    case 'listUsers': need(s, ['Admin']); return rows('Users').map(u => ({username: u.Username, name: u.Name, role: u.Role, active: String(u.Active).toUpperCase() !== 'FALSE', branch: u.Branch, dept: u.Dept, email: u.Email || '', phone: u.Phone || ''}));
     case 'saveUser': {
-      need(s, ['Admin']); const us = SS.getSheetByName('Users'), d = r.data, ex = rows('Users').find(x => String(x.Username).toLowerCase() === d.username.toLowerCase());
-      const row = [d.username, d.name, d.role, d.password ? hash(d.password) : (ex ? ex.Hash : hash('changeme')), d.active !== false, d.branch || '', d.dept || '', d.email || ''];
-      if (ex) us.getRange(ex._row, 1, 1, 8).setValues([row]); else us.appendRow(row); return true;
+      need(s, ['Admin']); const us = SS.getSheetByName('Users'), d = r.data;
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(d.email || '').trim())) throw new Error('A valid email address is required');
+      d.phone = String(d.phone || '').replace(/[^\d+]/g, ''); if (!/^\+?\d{10,13}$/.test(d.phone)) throw new Error('A valid contact number is required');
+      const ex = rows('Users').find(x => String(x.Username).toLowerCase() === d.username.toLowerCase());
+      const row = [d.username, d.name, d.role, d.password ? hash(d.password) : (ex ? ex.Hash : hash('changeme')), d.active !== false, d.branch || '', d.dept || '', d.email.trim(), d.phone, ex ? (ex.MustChange || '') : ''];
+      if (ex) us.getRange(ex._row, 1, 1, 10).setValues([row]); else us.appendRow(row); return true;
     }
   }
   throw new Error('Unknown action');
