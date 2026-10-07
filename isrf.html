@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IS PROJECTS - ISRF Monitoring</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#10243a;--ink2:#1b3a57;--paper:#f3f6f9;--card:#fff;--line:#dde4ec;--mute:#64748b;--teal:#0f766e;--amber:#b45309;--red:#b91c1c;--green:#15803d;--blue:#1d4ed8}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 'IBM Plex Sans',system-ui,sans-serif;background:var(--paper);color:var(--ink)}
+button,input,select,textarea{font:inherit}h1,h2,h3{margin:0}
+.hide{display:none!important}
+/* login */
+#login{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
+.hero{background:var(--ink);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between}
+.hero h1{font-size:44px;letter-spacing:.5px;font-weight:600}.hero p{color:#a9bdd1;max-width:380px;font-size:16px}
+.chain{display:flex;gap:6px;flex-wrap:wrap}.chain span{border:1px solid #35557a;border-radius:20px;padding:4px 12px;color:#cfe0f1;font-size:12px}
+.lw{display:grid;place-items:center;padding:32px}.lf{width:100%;max-width:340px}.lf h2{font-size:24px;margin-bottom:4px}
+label{display:block;font-weight:500;margin:14px 0 4px;font-size:13px}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.btn{background:var(--teal);color:#fff;border:0;border-radius:6px;padding:9px 16px;font-weight:500;cursor:pointer}
+.btn:hover{background:#0b5f58}.btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.sec:hover{background:var(--paper)}
+.btn.red{background:var(--red)}.btn.full{width:100%;margin-top:20px}.btn.sm{padding:5px 10px;font-size:12px}
+.err{color:var(--red);margin-top:10px;min-height:20px}.note{color:var(--mute);font-size:12px;margin-top:14px}
+/* app */
+#app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+aside{background:var(--ink);color:#cfe0f1;padding:22px 14px;position:sticky;top:0;height:100vh}
+aside .brand{color:#fff;font-weight:600;font-size:18px;padding:0 10px 4px}aside small{display:block;padding:0 10px 22px;color:#7f9bb8}
+aside a{display:block;padding:9px 12px;border-radius:6px;color:inherit;cursor:pointer;margin-bottom:2px}
+aside a.on,aside a:hover{background:var(--ink2);color:#fff}
+main{padding:24px 32px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.chip{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:30px;padding:5px 6px 5px 14px}
+.role{font-size:12px;padding:2px 10px;border-radius:20px;background:#e0f2f1;color:var(--teal);font-weight:500}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;border-left:4px solid var(--c,var(--line))}
+.stat b{font-size:26px;display:block;line-height:1.2}.stat span{color:var(--mute);font-size:12px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px}
+.bar{display:flex;gap:10px;padding:14px;border-bottom:1px solid var(--line);flex-wrap:wrap}.bar input,.bar select{width:auto;flex:1;min-width:140px}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}
+th{text-align:left;font-weight:500;color:var(--mute);font-size:12px;padding:10px 14px;background:#f8fafc;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid #eef2f6;white-space:nowrap}tr.r{cursor:pointer}tr.r:hover td{background:#f8fbfd}
+.badge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:#fef3c7;color:var(--amber)}
+.badge.Completed{background:#dcfce7;color:var(--green)}.badge.Rejected{background:#fee2e2;color:var(--red)}
+.badge.PendingAnswer,.badge.PendingApproval{background:#dbeafe;color:var(--blue)}
+.empty{padding:40px;text-align:center;color:var(--mute)}
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(16,36,58,.55);display:flex;justify-content:center;align-items:flex-start;padding:30px 14px;overflow:auto;z-index:9}
+.modal{background:#fff;border-radius:10px;width:100%;max-width:720px;padding:24px}
+.modal h2{margin-bottom:2px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;margin:12px 0}
+.step{border:1px dashed var(--line);border-radius:8px;padding:10px;min-height:96px}
+.step.done{border:1px solid #bfe3dd;background:#f2faf8}.step.next{border:1px solid var(--amber);background:#fffbeb}
+.step small{color:var(--mute);display:block}.sig{font:600 22px 'Dancing Script',cursive;color:var(--ink2);line-height:1.2;margin:6px 0 2px}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px 12px;margin:12px 0}.kv dt{color:var(--mute)}.kv dd{margin:0}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:6px;z-index:20}
+.demo{background:#fef3c7;color:var(--amber);padding:6px 12px;border-radius:6px;font-size:12px;margin-bottom:14px}
+@media(max-width:800px){#login{grid-template-columns:1fr}.hero{padding:28px;gap:24px}.hero h1{font-size:32px}#app{grid-template-columns:1fr}
+aside{position:static;height:auto;display:flex;flex-wrap:wrap;gap:4px;padding:12px}aside small{display:none}aside .brand{padding:6px 10px}main{padding:16px}.g2{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.badge.ForExecution,.badge.ForReview{background:#dbeafe;color:var(--blue)}.badge.ForISDDecision{background:#ede9fe;color:#6d28d9}.nbox{border-top:1px dashed var(--line)}
+@media print{aside,.np,.top .chip{display:none!important}#app{display:block}main{padding:0}.panel{border:0}.badge{border:1px solid #999;background:#fff!important;color:#000!important}}
+
+body{background:#eef2f7}.hero{background:linear-gradient(160deg,#0b1d31,#134e4a)}
+#app{grid-template-columns:252px 1fr}aside{background:linear-gradient(180deg,#0b1d31,#10243a);display:block;overflow:auto}
+aside .brand{display:flex;gap:11px;align-items:center;padding:2px 8px 18px;font-size:16px;line-height:1.2}
+aside .brand i{font-style:normal;display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-weight:600}
+aside .brand small{padding:0;font-weight:400;font-size:11px;color:#7f9bb8}
+.sec{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#6f8cab;padding:18px 12px 6px}
+aside a{display:flex;gap:10px;align-items:center;font-weight:500}aside a.on{background:rgba(255,255,255,.08);color:#fff;box-shadow:inset 3px 0 #2dd4bf}
+aside a b{font-size:10px;font-weight:600;background:#1e4163;color:#cfe0f1;border-radius:4px;padding:2px 6px;min-width:42px;text-align:center}
+.top h1{font-size:22px;font-weight:600}.panel,.stat{box-shadow:0 1px 3px rgba(16,36,58,.06)}.stat{border-radius:10px}.panel{border-radius:10px}
+th{text-transform:uppercase;letter-spacing:.05em;font-size:11px}tr.r:hover td{background:#f1f7fb}
+.badge::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px}
+.modal{box-shadow:0 20px 50px rgba(16,36,58,.3)}
+#pv{display:none;font:13px/1.5 'IBM Plex Sans',sans-serif;color:#000}.ph{display:flex;justify-content:space-between;border-bottom:2px solid #10243a;padding-bottom:10px;margin-bottom:14px}
+.pt{width:100%;border-collapse:collapse}.pt td,.pt th{border:1px solid #bbb;padding:6px 10px;text-align:left;white-space:normal;vertical-align:top;background:#fff;color:#000}.pt th{width:28%;background:#f1f4f7;text-transform:none;letter-spacing:0;font-size:12px;font-weight:600}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.pb{border:1px solid #bbb;padding:8px;min-height:84px}.pb small{color:#555}.ps{font:600 22px 'Dancing Script',cursive}.pd{font-size:11px;color:#555}
+@media print{body.pp #app,body.pp #mo,body.pp .toast{display:none!important}body.pp #pv{display:block}}
+@media(max-width:800px){#app{grid-template-columns:1fr}aside{display:flex;flex-wrap:wrap}aside nav{display:contents}.sec{display:none}}
+.fr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eef2f6}.fr small{color:var(--mute)}.fr .btn{margin-left:6px}
+.meter{height:10px;background:#e5eaf0;border-radius:8px;overflow:hidden}.meter i{display:block;height:100%;background:var(--teal)}#u6{height:auto}
+
+body.sb-light aside{background:#fff;color:#475569;border-right:1px solid var(--line)}body.sb-light aside .brand{color:var(--ink)}body.sb-light aside .brand small{color:var(--mute)}
+body.sb-light .sec{color:#94a3b8}body.sb-light aside a:hover{background:#f1f5f9;color:var(--ink)}body.sb-light aside a.on{background:#e8f3f2;color:var(--teal);box-shadow:inset 3px 0 var(--teal)}body.sb-light aside a b{background:#e2e8f0;color:#334155}
+body.compact td{padding:6px 12px}body.compact th{padding:7px 12px}body.compact main{padding:18px 24px}body.compact .stat{padding:9px 14px}
+body.square .panel,body.square .stat,body.square .modal,body.square .btn,body.square input,body.square select,body.square textarea,body.square .badge{border-radius:2px}
+.btn:not(.sec):not(.red):hover{background:var(--teal);filter:brightness(.9)}aside .brand i{overflow:hidden}aside .brand i img{width:100%;height:100%;object-fit:contain;background:#fff}
+.pr{font:13px/1.45 'IBM Plex Sans',Arial,sans-serif;color:#10243a;display:flex;flex-direction:column;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pr-h{display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:3px solid #10243a}.pr-lg{width:60px;height:60px;border-radius:10px;background:#10243a;color:#fff;display:grid;place-items:center;font-weight:600;font-size:21px;overflow:hidden}.pr-lg img{width:100%;height:100%;object-fit:contain;background:#fff}
+.pr-co{flex:1}.pr-co b{font-size:21px;display:block;line-height:1.2}.pr-co span{color:#64748b;font-size:12px}.pr-id{text-align:right}.pr-id small{display:block;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-size:10px}.pr-id b{font-size:18px}
+.pr-st{display:inline-block;margin-top:4px;border:1.5px solid #10243a;border-radius:4px;padding:1px 10px;font-weight:600;font-size:11px;text-transform:uppercase}
+.pr-t{text-align:center;font-size:18px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin:16px 0 4px}
+.pr-s{background:#10243a;color:#fff;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;margin-top:16px}
+.pr-g{width:100%;border-collapse:collapse}.pr-g td{border:1px solid #9aa8b6;padding:9px 10px;vertical-align:top;white-space:normal;background:#fff;color:#10243a}.pr-g td.k{width:17%;background:#eef2f6;font-weight:600;font-size:12px}
+.pr-b{border:1px solid #9aa8b6;border-top:0;padding:10px 12px;white-space:pre-wrap}.pr-rh{background:#eef2f6;border:1px solid #9aa8b6;border-top:0;padding:4px 12px;font-weight:600;font-size:12px}
+.pr-sgs{display:grid;grid-template-columns:repeat(3,1fr);border-left:1px solid #9aa8b6;border-top:1px solid #9aa8b6}
+.pr-sg{border-right:1px solid #9aa8b6;border-bottom:1px solid #9aa8b6;padding:8px 12px 10px;min-height:122px;display:flex;flex-direction:column}.pr-sg small{text-transform:uppercase;letter-spacing:.06em;font-size:10px;color:#64748b;font-weight:600}
+.pr-sn{font:600 28px 'Dancing Script',cursive;min-height:46px;margin-top:6px;line-height:1.2}.pr-ln{border-top:1px solid #10243a;margin-top:auto}.pr-nm{font-weight:600;font-size:12px;margin-top:3px}.pr-dt{font-size:11px;color:#64748b}
+.pr-f{margin-top:auto;padding-top:10px;border-top:1px solid #9aa8b6;font-size:10.5px;color:#64748b;display:flex;justify-content:space-between;gap:12px}
+
+body{background:var(--pg,#eef2f7)}aside{background:var(--sb,#10243a)}body.sb-light aside{background:var(--sb,#fff)}
+.hero{background:linear-gradient(160deg,var(--hero,#0b1d31) 45%,var(--teal))}
+.pr-h{border-bottom-color:var(--prc,#10243a)}.pr-lg{background:var(--prc,#10243a)}.pr-s{background:var(--prc,#10243a)}.pr-st{border-color:var(--prc,#10243a)}.pr-ln{border-top-color:var(--prc,#10243a)}
+
+.hb{border-radius:14px;min-height:200px;background:linear-gradient(120deg,var(--sb,#10243a),var(--teal)) center/cover;color:#fff;display:flex;align-items:flex-end;overflow:hidden;margin-bottom:18px}
+.hbo{padding:28px 30px;width:100%;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent)}.hbo h1{font-size:28px;font-weight:600}.hbo p{margin:6px 0 0;max-width:640px;color:#e8eef5}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:22px}
+.mc{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;box-shadow:0 1px 3px rgba(16,36,58,.06);transition:transform .15s,box-shadow .15s}.mc:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,36,58,.12)}
+.mi{height:130px;background:#dfe7ef center/cover no-repeat}.mi.ph{display:grid;place-items:center;background:linear-gradient(135deg,var(--teal),var(--sb,#10243a));color:#fff;font-size:30px;font-weight:600;letter-spacing:.06em}
+.mb{padding:14px 16px}.mb p{color:var(--mute);margin:4px 0 10px;min-height:20px}.mm{display:flex;gap:6px;flex-wrap:wrap}.mm span{font-size:12px;background:#eef2f6;border-radius:20px;padding:2px 10px}.mm .mn{background:#fef3c7;color:var(--amber);font-weight:500}
+@media(prefers-reduced-motion:reduce){.mc{transition:none}}
+
+.hero{background-size:cover;background-position:center}
+#login.lay-splitr{grid-template-columns:1fr 1.1fr}#login.lay-splitr .hero{order:2}
+#login.lay-basic,#login.lay-cover{display:block;background-size:cover;background-position:center}#login.lay-basic{background-color:var(--pg,#eef2f7)}#login.lay-cover{background-color:var(--hero,#0b1d31)}
+#login.lay-basic .hero,#login.lay-cover .hero{display:none}#login.lay-basic .lw,#login.lay-cover .lw{min-height:100vh}
+#login.lay-basic .lf,#login.lay-cover .lf{background:#fff;padding:34px 32px;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(16,36,58,.14)}
+.lbrand{display:none;align-items:center;gap:10px;margin-bottom:18px}#login.lay-basic .lbrand,#login.lay-cover .lbrand{display:flex}
+.lbrand i{font-style:normal;display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:var(--teal);color:#fff;font-weight:600;overflow:hidden}.lbrand i img{width:100%;height:100%;object-fit:contain;background:#fff}.lbrand b{font-size:16px}
+.hgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}.hside{display:flex;flex-direction:column;gap:14px}
+.blk{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(16,36,58,.06)}.blk h3{font-size:14px;margin-bottom:8px}
+.bi{padding:8px 0;border-bottom:1px solid #eef2f6;cursor:pointer;display:flex;flex-direction:column}.bi:last-child{border:0}.bi span,.bm{color:var(--mute);font-size:13px}
+.ad{padding:0;overflow:hidden}.adi{height:130px;background:#dfe7ef center/cover no-repeat}.adb{padding:14px 16px}.adb small{color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:10px}.adb p{margin:4px 0 8px;color:var(--mute)}
+.adb a,.bl{color:var(--teal);font-weight:500;text-decoration:none}.bl{display:block;padding:7px 0;border-bottom:1px solid #eef2f6}.bl:last-child{border:0}
+@media(max-width:1100px){.hgrid{grid-template-columns:1fr}}
+
+.acts2{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}.ms{padding:8px 0;border-bottom:1px solid #eef2f6}.ms small{color:var(--mute)}.bd{background:#b91c1c;color:#fff;border-radius:10px;font-size:11px;padding:0 6px;margin-left:4px}
+#ro td{white-space:normal;vertical-align:top}#ro .nl{white-space:pre-line}#ro table{font-size:13px}
+#mtop,#dov{display:none}
+@media(min-width:801px){
+ body.nav-top #app{grid-template-columns:1fr}
+ body.nav-top aside{position:sticky;top:0;height:auto;display:flex;align-items:center;gap:4px;padding:8px 20px;overflow-x:auto;white-space:nowrap;z-index:10}
+ body.nav-top aside .brand{padding:0 16px 0 0}body.nav-top .sec{display:none}body.nav-top aside nav{display:contents}body.nav-top aside a{margin:0!important}body.nav-top #so{margin-left:auto!important}
+}
+@media(max-width:800px){
+ #mtop{display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:15;background:var(--sb,#10243a);color:#fff;padding:10px 12px}
+ #mtop .mb{background:rgba(255,255,255,.16);color:inherit;border:0;border-radius:8px;padding:8px 12px;font-weight:500;cursor:pointer}
+ body.sb-light #mtop{background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}body.sb-light #mtop .mb{background:#eef2f6}
+ aside{position:fixed!important;left:0;top:0;bottom:0;width:270px!important;height:100vh!important;transform:translateX(-102%);transition:transform .2s;z-index:30;display:block!important;overflow:auto}
+ body.drawer aside{transform:none;box-shadow:0 0 40px rgba(0,0,0,.4)}#dov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:25}body.drawer #dov{display:block}
+ .sec{display:block!important}aside nav{display:block!important}.top .chip{display:none}main{padding:14px}
+ .modal{padding:18px}.modal>.acts:last-child{position:sticky;bottom:-1px;background:#fff;padding:10px 0;z-index:2}.modal>.acts:last-child .btn{flex:1 1 auto}
+}
+@media print{#mtop,#dov{display:none!important}body.nav-top aside{display:none!important}}
+
+/* ---- Native PRF module ---- */
+.prf-grid{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.prf-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(16,36,58,.06)}
+.prf-card b{display:block;font-size:24px}.prf-card span{color:var(--mute);font-size:12px}
+.prf-toolbar{display:flex;gap:10px;padding:14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.prf-toolbar input,.prf-toolbar select{width:auto;min-width:150px;flex:1}
+.prf-item{border:1px solid var(--line);border-radius:8px;padding:12px;margin:10px 0;background:#fbfdff}
+.prf-item-grid{display:grid;grid-template-columns:minmax(0,2fr) 100px 150px 150px;gap:10px;align-items:end}
+.prf-total{display:flex;justify-content:flex-end;gap:20px;padding:12px 0;font-weight:600}
+.prf-flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:14px 0}
+.prf-flow .step{min-height:80px}
+.prf-table td{white-space:normal;vertical-align:top}
+.prf-muted{color:var(--mute);font-size:12px}
+.prf-alert{padding:10px 12px;border-radius:7px;background:#fff7ed;color:#9a3412;margin:10px 0}
+@media(max-width:900px){.prf-grid{grid-template-columns:repeat(2,1fr)}.prf-item-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.prf-grid{grid-template-columns:1fr}.prf-item-grid{grid-template-columns:1fr}.prf-toolbar input,.prf-toolbar select{width:100%}}
+
+.prf-flowchart{display:flex;align-items:stretch;gap:7px;overflow:auto;padding:12px 2px 16px;margin:12px 0}.pf-step{min-width:145px;max-width:175px;border:1px solid #cbd5e1;border-radius:12px;padding:12px;background:#fff;box-shadow:0 3px 10px rgba(15,23,42,.06)}.pf-step b{display:block;font-size:13px}.pf-step span{display:block;font-size:11px;font-weight:700;margin:5px 0 8px;color:#475569}.pf-step small{display:block;line-height:1.4;color:#334155}.pf-arrow{display:flex;align-items:center;font-size:22px;font-weight:800;color:#64748b}.pf-blue{border-top:5px solid #2563eb}.pf-yellow{border-top:5px solid #ca8a04}.pf-red{border-top:5px solid #dc2626}.pf-green{border-top:5px solid #16a34a}.pf-purple{border-top:5px solid #7c3aed}.prf-helpgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}.prf-helpgrid>div{border:1px solid #dbe3ec;border-radius:10px;padding:12px;background:#f8fafc}.prf-helpgrid h3{margin:0 0 7px}.prf-helpgrid ul{margin:0;padding-left:20px;line-height:1.55}.prf-help .prf-alert{margin-top:12px}@media(max-width:900px){.prf-flowchart{flex-direction:column}.pf-arrow{justify-content:center;transform:rotate(90deg);height:15px}.pf-step{max-width:none}.prf-helpgrid{grid-template-columns:1fr}}
+</style></head><body>
+
+<div id="login" class="lay-split">
+ <div class="hero"><div><h1 id="lh">IS PROJECTS</h1><p id="ls">Record requests, collect sign-offs, and track every monitoring to completion.</p></div><div class="chain" id="lc"></div></div>
+ <div class="lw"><div class="lf"><div class="lbrand"><i id="lbi">IS</i><b id="lbn">IS PROJECTS</b></div><h2 id="lft">Sign in</h2><div id="lfh" style="color:var(--mute)">Use the account given by your administrator.</div>
+  <label for="lu">Username</label><input id="lu" autocomplete="username">
+  <label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password">
+  <button class="btn full" id="lb">Sign in</button><div class="err" id="le"></div><div class="note" id="lsu" style="text-align:center;margin-top:14px">No account yet? <a href="#" id="lsa">Create an account</a></div><div class="note" style="text-align:center;margin-top:6px"><a href="#" id="lfg">Forgot password?</a></div><div class="note" id="lfo"></div></div></div>
+</div>
+<div id="app" class="hide">
+ <header id="mtop"><button class="mb" id="mbtn" type="button">Menu</button><b id="mbn">IS PROJECTS</b><span style="flex:1"></span><button class="mb" id="bell2" type="button">Alerts <span class="bd hide" id="bd2">0</span></button><button class="mb" id="lo2" type="button">Sign out</button></header>
+ <aside><div class="brand"><i id="bi">IS</i><div><span id="bn">IS PROJECTS</span><small id="bs">Monitoring system</small></div></div>
+  <a data-v="home" class="on">Home</a><div class="sec">Monitoring</div><nav id="mons"></nav><a data-v="prf" id="navprf">Procurement (PRF)</a><div class="sec">Insights</div><a data-v="rep">Reports</a>
+  <div class="sec">Administration</div><a data-v="set" id="navset">Setup and users <span class="bd hide" id="sbd">0</span></a><div class="sec">Tools / Help</div><a id="isrfhelp">ISRF User Guide / Workflow</a><a id="prfhelp">PRF User Guide / Workflow</a><a id="pw" style="margin-top:18px">Change password</a><a id="so">Sign out</a></aside><div id="dov"></div>
+ <main>
+  <div class="top"><h1 id="vt">ISRF records</h1>
+   <div class="chip"><span id="un"></span><span class="role" id="ur"></span><button class="btn sec sm" id="bell" type="button">Alerts <span class="bd hide" id="bd">0</span></button><button class="btn sec sm" id="lo">Sign out</button></div></div>
+  <section id="v-home"></section>
+  <section id="v-isrf" class="hide">
+   <div class="stats" id="stats"></div>
+   <div class="panel"><div class="bar">
+     <input id="q" placeholder="Search ID, details, names"><select id="fb"></select><select id="fs"></select>
+     <button class="btn" id="nb">New ISRF</button></div>
+    <div class="tw"><table><thead><tr id="th"></tr></thead><tbody id="tb"></tbody></table></div>
+    <div class="empty hide" id="em">No ISRF records match.</div></div>
+  </section>
+  <section id="v-rep" class="hide">
+   <div class="panel"><div class="bar np"><select id="rm"></select><select id="rg"><option>Area</option><option>Branch</option></select><select id="rn"></select>
+    <input type="date" id="rf" title="From"><input type="date" id="rt" title="To"><button class="btn" id="rb">Generate</button>
+    <button class="btn sec" id="rp">Print / PDF (landscape)</button><button class="btn sec" id="rc">Export CSV</button></div>
+    <div id="ro" style="padding:18px"><div class="empty">Choose Area or Branch, then click Generate.</div></div></div>
+  </section>
+  <section id="v-set" class="hide">
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Account requests</h3><div style="color:var(--mute);margin:4px 0 8px">People who asked for an account from the login page. Approve to create the account; they are notified by email, and you can also text them.</div><div id="acc"></div></div>
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Login page</h3><div style="color:var(--mute);margin:4px 0 8px">Choose a layout and the text shown before users sign in.</div>
+   <div class="g2"><div><label>Layout</label><select id="g1"><option value="split">Split - image panel on the left</option><option value="splitr">Split - image panel on the right</option><option value="basic">Basic boilerplate - simple centered card</option><option value="cover">Cover - full background image with card</option></select></div>
+   <div><label>Background / panel image</label><input type="file" id="g8" accept="image/*"><div id="g9" style="margin-top:6px"></div></div>
+   <div><label>Headline</label><input id="g2" placeholder="Company name by default"></div><div><label>Form title</label><input id="g5" placeholder="Sign in"></div></div>
+   <label>Sub text</label><input id="g3"><label>Form hint</label><input id="g6"><label>Highlights (one per line, shown as chips on split layouts)</label><textarea id="g4" rows="3"></textarea>
+   <label>Footer note under the form</label><input id="g7" placeholder="e.g. Need access? Contact the IS department."><label style="font-weight:400;margin-top:10px"><input type="checkbox" id="g10" style="width:auto"> Allow people to request an account from the login page</label><div class="acts"><button class="btn" id="gs">Save login page</button></div></div>
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Home page</h3><div style="color:var(--mute);margin:4px 0 8px">The first page users see. Add a banner, a welcome message, and a picture and description for each monitoring.</div>
+   <div class="g2"><div><label>Welcome title</label><input id="h1" placeholder="Welcome to our monitoring portal"></div><div><label>Banner image</label><input type="file" id="h2" accept="image/*"><div id="h3" style="margin-top:6px"></div></div></div>
+   <label>Welcome text</label><textarea id="h4" rows="2"></textarea><div id="hc" style="margin-top:10px"></div>
+   <h3 style="margin-top:16px">Side blocks: advertisements and announcements</h3><div style="color:var(--mute);margin:4px 0 8px">Shown beside the home page. Add a picture, text and an optional link. Set an end date to hide it automatically.</div>
+   <div id="ha"></div><div class="acts" style="justify-content:flex-start"><button class="btn sec sm" id="hadd" type="button">Add advertisement</button></div>
+   <div class="g2"><div><label>Quick links (one per line: Label | https://link)</label><textarea id="hl" rows="3"></textarea></div><div><label>Help desk text (contact numbers, email, hours)</label><textarea id="hh" rows="3"></textarea></div></div>
+   <div class="acts"><button class="btn" id="hs">Save home page</button></div></div>
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Company and appearance</h3>
+   <div style="margin:8px 0 2px;color:var(--mute)">Color presets (then adjust any color below and save)</div>
+   <div class="acts" style="justify-content:flex-start;margin:0 0 6px;flex-wrap:wrap" id="pz"></div>
+   <div class="g2"><div><label>Company name</label><input id="b1"></div><div><label>Logo (shown in sidebar, login and printouts)</label><input type="file" id="b2" accept="image/*"><div style="margin-top:6px;display:flex;gap:10px;align-items:center"><span id="b9"></span><button class="btn sec sm" id="bx" type="button">Remove logo</button></div></div>
+   <div><label>Accent color</label><input type="color" id="b3" style="height:38px;padding:3px"></div><div><label>Sidebar color</label><input type="color" id="b4" style="height:38px;padding:3px"></div>
+   <div><label>Page background</label><input type="color" id="b10" style="height:38px;padding:3px"></div><div><label>Text and heading color</label><input type="color" id="b11" style="height:38px;padding:3px"></div>
+   <div><label>Login screen color</label><input type="color" id="b12" style="height:38px;padding:3px"></div><div><label>Printout header and section color</label><input type="color" id="b13" style="height:38px;padding:3px"></div>
+   <div><label>Density</label><select id="b5"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></div><div><label>Corners</label><select id="b6"><option value="rounded">Rounded</option><option value="square">Square</option></select></div>
+   <div><label>Menu position (desktop)</label><select id="b14"><option value="side">Side menu</option><option value="top">Top menu</option></select></div>
+   <div><label>Print paper size</label><select id="b7"><option>A4</option><option>Letter</option><option>Legal</option></select></div><div><label>Print footer note</label><input id="b8" placeholder="e.g. Confidential - for internal use only"></div></div>
+   <div class="acts"><button class="btn" id="bs2">Save appearance</button></div></div>
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Messaging</h3><div style="color:var(--mute);margin:4px 0 8px">Email works through your Google account (about 100 recipients per day on a free account). SMS can always be opened in the phone's Messages app. To send SMS directly from the system, connect a gateway: a free Android phone gateway (SMSGate app, sends from your own SIM) or Semaphore (paid, needs approval).</div>
+   <div class="g2"><div style="grid-column:1/-1"><label>SMS provider</label><select id="m3"><option value="android">Android phone gateway (SMSGate app - free)</option><option value="semaphore">Semaphore (paid)</option></select></div>
+   <div class="gp-a"><label>SMSGate username (shown in the app)</label><input id="m4" autocomplete="off"></div><div class="gp-a"><label>SMSGate password (blank = keep)</label><input id="m5" type="password" autocomplete="off"></div>
+   <div class="gp-s"><label>Semaphore API key (blank = keep)</label><input id="m1" type="password" autocomplete="off"></div><div class="gp-s"><label>Sender name (optional)</label><input id="m2"></div></div>
+   <div id="mst" style="margin-top:8px;color:var(--mute)"></div><div class="acts"><button class="btn sec" id="mx" type="button">Disconnect gateway</button><button class="btn" id="ms">Save messaging</button></div></div>
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Procurement Request (PRF) setup</h3>
+   <div style="color:var(--mute);margin:4px 0 12px">Configure who may approve and perform PRF stages. Enter usernames separated by commas. Diagnostic users default to ISD members when left blank. Award authority defaults to ISD members and configured ISM approvers when left blank. Branch Manager approval remains required before assessment or forwarding.</div>
+   <div class="g2">
+    <div style="grid-column:1/-1"><label>PRF / Procurement form name</label><input id="prfName" maxlength="40" placeholder="PRF"></div>
+    <div><label>Area Manager (AM) approvers</label><input id="prfam" placeholder="username1, username2"></div>
+    <div><label>Information System Manager (ISM) approvers</label><input id="prfism" placeholder="username1, username2"></div>
+    <div><label>Chief Operating Officer (COO) approvers</label><input id="prfcoo" placeholder="username1, username2"></div>
+    <div><label>Accounting department</label><input id="prfAcctDept" value="Accounting" placeholder="Accounting"></div>
+    <div><label>Diagnostic / Assessment users</label><input id="prfdiagusers" placeholder="ISD usernames, username2"></div>
+    <div><label>Canvass / Award authorized users</label><input id="prfawardusers" placeholder="username1, username2"></div>
+   </div>
+   <label>Diagnostic groups and checkboxes</label><div class="g2">
+    <div><label>SYSTEM UNIT parts</label><textarea id="prfg_system" rows="6"></textarea></div>
+    <div><label>CCTV parts</label><textarea id="prfg_cctv" rows="6"></textarea></div>
+    <div><label>PRINTER DOT MATRIX parts</label><textarea id="prfg_dot" rows="5"></textarea></div>
+    <div><label>PRINTER INKJET parts</label><textarea id="prfg_ink" rows="6"></textarea></div>
+    <div><label>UPS parts</label><textarea id="prfg_ups" rows="5"></textarea></div>
+    <div><label>MONITOR parts</label><textarea id="prfg_monitor" rows="6"></textarea></div>
+    <div><label>SWITCH HUB parts</label><textarea id="prfg_switch" rows="4"></textarea></div>
+    <div><label>LAPTOP parts</label><textarea id="prfg_laptop" rows="7"></textarea></div>
+    <div><label>OTHER parts</label><textarea id="prfg_other" rows="3"></textarea></div>
+   </div><div class="acts"><button class="btn" id="prfgsave" type="button">Save PRF setup</button></div></div>
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Monitoring types</h3><label>One per line: CODE | Name &nbsp;(example: ISRF | Information System Request Form). Each monitoring uses the same workflow and has its own sidebar entry and ID numbers.</label><textarea id="sm" rows="3"></textarea></div>
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Fields for each monitoring type</h3>
+   <div style="color:var(--mute);margin:4px 0 8px">One field per line: <b>Label | type | options | *</b>. Types: text, textarea, number, date, select. For select, list the choices separated by commas. Add * at the end to make a field required. Date and Branch are always included. ISRF is pre-filled with its standard fields and can be edited too (keep the labels Error type, Documents damaged and Problem details to keep showing existing data; leave the options of Error type blank to use the Error types list). A new monitoring with no fields yet uses the ISRF fields. Do not rename a field once records exist; add a new one instead.<br>Example: <i>Vendor | text | *</i> and <i>Category | select | Hardware, Software, Network</i></div>
+   <div id="mf" class="g2"></div></div>
+   <div class="g2"><div class="panel" style="padding:18px"><h3>Areas and branches</h3><label>One per line: Area | Branch</label><textarea id="sb" rows="8"></textarea></div>
+   <div><div class="panel" style="padding:18px"><h3>Error types</h3><label>One per line. Start a line with CODE | to limit it to one monitoring</label><textarea id="se" rows="3"></textarea>
+   <h3 style="margin-top:12px">Departments that add notes</h3><label>One per line (e.g. Accounting, CCD)</label><textarea id="sd" rows="3"></textarea></div></div></div>
+   <div class="acts" style="margin:12px 0 24px"><button class="btn" id="sc">Save lists</button></div>
+   <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Attachment storage (Google Drive)</h3><div id="sti" style="margin:8px 0"></div>
+   <div class="g2"><div><label>Max file size (MB)</label><input id="s1" type="number" min="1"></div><div><label>Max files per request</label><input id="s2" type="number" min="1"></div>
+   <div><label>Total storage cap for attachments (MB)</label><input id="s3" type="number" min="1"></div><div><label>Delete files of completed requests after (days, 0 = keep)</label><input id="s4" type="number" min="0"></div></div>
+   <div class="acts"><button class="btn sec" id="sx">Clean up now</button><button class="btn" id="ss">Save storage settings</button></div></div>
+   <div class="panel"><div class="bar"><h3 style="flex:1;align-self:center">Users (click a row to edit)</h3></div>
+    <div class="tw"><table><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Visible branches</th><th>Dept</th><th>Contact</th><th>Active</th></tr></thead><tbody id="ut"></tbody></table></div>
+    <form id="uf" style="padding:16px" class="g2" onsubmit="return false">
+     <div><label>Username</label><input id="u1"></div><div><label>Full name</label><input id="u2"></div>
+     <div><label>Role</label><select id="u3"><option>User</option><option>Approver</option><option>ISD</option><option>Dept</option><option>Reviewer</option><option>Viewer</option><option>Admin</option></select></div>
+     <div><label>Password (blank = keep)</label><input id="u4" type="password"></div>
+     <div><label>Visible branches / offices (Ctrl+click for several)</label><select id="u6" multiple size="7"></select></div><div><label>Department (for Dept role)</label><select id="u7"></select></div>
+     <div><label>Email *</label><input id="u8" type="email"></div>
+     <div><label>Contact number *</label><input id="u9" type="tel" placeholder="09XXXXXXXXX"></div>
+     <div><label><input type="checkbox" id="u5" checked style="width:auto"> Active</label></div>
+     <div style="text-align:right"><button class="btn sec" id="urp" type="button">Send temporary password</button> <button class="btn" id="us">Save user</button></div></form></div>
+   <div class="panel" style="padding:18px;margin-top:14px"><h3>Database export and migration (SQL Server)</h3>
+   <div style="color:var(--mute);margin:4px 0 8px">Download your data as a SQL Server script (tables and INSERT statements) or a JSON backup. Attachment files stay in the Google Drive folder "IS PROJECTS Attachments"; their names and Drive IDs are exported in the Files table.</div>
+   <div class="acts" style="justify-content:flex-start"><button class="btn" id="xs" type="button">Download SQL Server script (.sql)</button><button class="btn sec" id="xj" type="button">Download JSON backup</button></div>
+   <h3 style="margin-top:16px">Transfer directly to SQL Server</h3><div style="color:var(--mute);margin:4px 0 8px">Works only if your SQL Server is reachable from the internet and allows Google's connections. Otherwise use the .sql script. The password is used for this transfer only and is not saved.</div>
+   <div class="g2"><div><label>Server / host</label><input id="xh"></div><div><label>Port</label><input id="xp" value="1433"></div><div><label>Database (must already exist)</label><input id="xd"></div><div><label>Login</label><input id="xu" autocomplete="off"></div>
+   <div><label>Password</label><input id="xw" type="password" autocomplete="off"></div><div><label style="font-weight:400"><input type="checkbox" id="xc" style="width:auto"> Trust the server certificate</label><label style="font-weight:400"><input type="checkbox" id="xr" style="width:auto"> Replace existing rows in these tables</label></div></div>
+   <div class="acts"><button class="btn" id="xt" type="button">Transfer now</button></div></div>
+  </section>
+ 
+  <section id="v-prf" class="hide">
+    <div id="prf-list-view">
+      <div class="prf-grid" id="prfstats"></div>
+      <div class="panel">
+        <div class="prf-toolbar">
+          <input id="prfq" placeholder="Search PRF no., branch, reason, item">
+          <select id="prffs"><option value="">All statuses</option></select>
+          <button class="btn" id="prfnew" type="button">New PRF</button>
+          <button class="btn sec" id="prfrefresh" type="button">Refresh</button>
+        </div>
+        <div class="tw"><table class="prf-table">
+          <thead><tr><th>PRF No.</th><th>Date</th><th>Branch</th><th>Requested By</th><th>Items</th><th>Projected</th><th>Status</th></tr></thead>
+          <tbody id="prftb"></tbody>
+        </table></div>
+        <div class="empty hide" id="prfempty">No procurement requests found.</div>
+      </div>
+    </div>
+    <div id="prf-detail-view" class="hide"></div>
+  </section>
+</main>
+</div>
+<div id="mo"></div><div id="pv"></div><style id="pgs"></style>
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxS_8K9Bf6DY0ckybi616PZRbMLCRHuHNdPeawV4Yp7TfGg4j0xrYNwMyQ1Crt2gw-F/exec"; // your Apps Script Web app URL
+const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let S={token:null,user:null,rows:[],cfg:{Branch:[],ErrorType:[],Dept:[],Monitor:[]},mon:null},REP=[],V="home",HOME=null,HIMG={};
+const TK="isrf_tok",saveTok=t=>{try{t?localStorage.setItem(TK,t):localStorage.removeItem(TK)}catch(e){}},getTok=()=>{try{return localStorage.getItem(TK)}catch(e){return null}};
+const notes=r=>{try{return JSON.parse(r.Notes||"{}")}catch(e){return{}}};
+const status=r=>{if(r.Status==="Rejected")return"Rejected";if(r.ReviewedBy)return"Completed";if(r.AnsweredBy)return"For Review";
+ if(!r.Decision)return r.ApprovedBy?"For ISD Decision":"Pending Branch Approval";if(r.Decision==="Execute")return"For Execution";
+ const n=notes(r),p=String(r.ForwardTo).split(",").filter(d=>d&&!(n[d]&&n[d].sig));return p.length?"Pending Note: "+p.join(", "):"For Execution"};
+const cls=s=>s.startsWith("Pending")?"Pending":s.replace(/ /g,"");
+const fmt=v=>{if(!v)return null;const[n,t]=String(v).split("|"),d=new Date(t);return{n,t:d.toLocaleDateString("en-GB")+" "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}};
+const toast=m=>{const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),5000)};
+async function api(action,p={}){
+  if(!API_URL)throw new Error("API_URL is empty in isrf.html");
+
+  let r;
+  try{
+    r=await fetch(API_URL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({action,token:S.token,...p}),
+      redirect:"follow",
+      cache:"no-store"
+    });
+  }catch(e){
+    throw new Error("Cannot connect to the Google Apps Script Web App. Check the deployment/access settings. "+(e.message||e));
+  }
+
+  const text=await r.text();
+  const raw=String(text||"").trim();
+
+  if(!raw){
+    throw new Error("The Google Apps Script returned an empty response. Check the Web App deployment.");
+  }
+
+  if(raw.startsWith("<!DOCTYPE")||raw.startsWith("<html")||raw.startsWith("<HTML")||raw.startsWith("<")){
+    throw new Error("Google Apps Script returned an HTML page instead of JSON. Deploy the latest Web App version with Execute as: Me and Who has access: Anyone.");
+  }
+
+  let j;
+  try{
+    j=JSON.parse(raw);
+  }catch(e){
+    throw new Error("Invalid JSON returned by Google Apps Script: "+raw.slice(0,300));
+  }
+
+  if(!j.ok){
+    if(/Session expired/i.test(String(j.error||""))&&S.token)forceOut();
+    throw new Error(j.error||"Google Apps Script returned an error.");
+  }
+
+  return j.data;
+}
+async function doLogin(){$("le").textContent="";$("lb").disabled=true;
+  try{const d=await api("login",{username:$("lu").value.trim(),password:$("lp").value});S.token=d.token;S.user=d.user;saveTok(d.token);start()}
+  catch(e){$("le").textContent=/JSON|fetch|null/i.test(e.message)?"Cannot reach the Google Sheet ("+e.message+")":e.message}finally{$("lb").disabled=false}}
+let BR={name:"",logo:"",ui:{}},PUB={},ACC=[];
+function applyBrand(d){const nm=d.Company||"",u=d.UI||{};BR={name:nm,logo:d.Logo||"",ui:u};
+  $("bn").textContent=nm||"IS PROJECTS";$("bs").textContent=nm?"IS PROJECTS":"Monitoring system";
+  $("bi").innerHTML=BR.logo?`<img src="${BR.logo}" alt="">`:esc((nm||"IS").slice(0,2).toUpperCase());document.title=(nm?nm+" - ":"")+"IS PROJECTS";
+  const root=document.documentElement.style,set=(k,v)=>v?root.setProperty(k,v):root.removeProperty(k),b=document.body.classList;
+  set("--teal",u.accent);set("--ink",u.ink);set("--pg",u.pagebg);set("--hero",u.hero);set("--prc",u.prc);
+  const sb=u.sbbg||(u.sidebar==="light"?"#ffffff":"#10243a");root.setProperty("--sb",sb);
+  const n=parseInt(sb.slice(1),16);b.toggle("sb-light",((n>>16&255)*.299+(n>>8&255)*.587+(n&255)*.114)/255>.6);b.toggle("compact",u.density==="compact");b.toggle("square",u.corners==="square");b.toggle("nav-top",u.nav==="top");$("mbn").textContent=nm||"IS PROJECTS"}
+function applyLogin(d){const L=d.Login||{},nm=d.Company||"",lay=L.layout||"split",el=$("login"),img=d.LoginImg;
+  el.className="lay-"+lay+(el.classList.contains("hide")?" hide":"");
+  $("lh").textContent=L.title||nm||"IS PROJECTS";$("ls").textContent=L.sub||"Record requests, collect sign-offs, and track every monitoring to completion.";
+  $("lc").innerHTML=(L.chips||"Requested\nApproved\nNoted\nExecuted\nReviewed").split("\n").map(x=>x.trim()).filter(Boolean).map(x=>`<span>${esc(x)}</span>`).join("");
+  $("lft").textContent=L.formTitle||"Sign in";$("lfh").textContent=L.hint||"Use the account given by your administrator.";$("lfo").textContent=L.footer||"";$("lsu").classList.toggle("hide",L.signup===false);
+  $("lbn").textContent=nm||"IS PROJECTS";$("lbi").innerHTML=d.Logo?`<img src="${d.Logo}" alt="">`:esc((nm||"IS").slice(0,2).toUpperCase());
+  el.style.backgroundImage=lay==="cover"&&img?`url('${img}')`:"";
+  document.querySelector(".hero").style.backgroundImage=img&&(lay==="split"||lay==="splitr")?`linear-gradient(rgba(11,29,49,.68),rgba(11,29,49,.68)),url('${img}')`:""}
+if(API_URL)api("brand").then(d=>{PUB=d;applyBrand(d);applyLogin(d)}).catch(()=>{});
+$("lb").onclick=doLogin;$("lp").onkeydown=e=>{if(e.key==="Enter")doLogin()};
+function forceOut(q){document.body.classList.remove("drawer");S.token=S.user=null;saveTok(null);HOME=null;V="home";$("app").classList.add("hide");$("login").classList.remove("hide");$("login").style.visibility="";$("lp").value="";if(!q)toast("Session expired. Please sign in again.")}
+$("lo").onclick=()=>forceOut(true);
+async function start(){const u=S.user;$("login").classList.add("hide");$("app").classList.remove("hide");
+  $("un").textContent=u.name;$("ur").textContent=u.role+(u.dept?" - "+u.dept:"")+(u.role!=="Admin"&&u.branch?" - "+(u.branch.length>26?u.branch.slice(0,26)+"...":u.branch):"");
+  $("navset").classList.toggle("hide",u.role!=="Admin");$("navset").previousElementSibling.classList.toggle("hide",u.role!=="Admin");$("nb").classList.toggle("hide",!["Admin","ISD","User"].includes(u.role));view("home");await load();poll();if(!window.PT)window.PT=setInterval(poll,90000);if(u.mustChange)changePwDlg(true)}
+document.querySelector("aside").onclick=e=>{const a=e.target.closest("a");if(!a||(a.getAttribute("href")&&!a.dataset.v))return;document.body.classList.remove("drawer");if(a.id==="so")return forceOut(true);if(a.id==="pw")return changePwDlg(false);if(a.id==="isrfhelp")return isrfHelpDlg();if(a.id==="prfhelp")return prfHelpDlg();if(a.dataset.m)S.mon=a.dataset.m;view(a.dataset.v)};
+$("mbtn").onclick=()=>document.body.classList.toggle("drawer");$("dov").onclick=()=>document.body.classList.remove("drawer");$("lo2").onclick=()=>forceOut(true);$("bell").onclick=$("bell2").onclick=openAlerts;
+function mark(){document.querySelectorAll("aside a").forEach(a=>a.classList.toggle("on",a.dataset.v===V&&(V!=="isrf"||a.dataset.m===S.mon)));
+  $("vt").textContent=V==="isrf"?mon(S.mon).name:{home:"Home",rep:"Reports",set:"Setup and users",prf:"Procurement Requests"}[V];$("nb").textContent="New "+(S.mon||"")}
+function nav(){$("mons").innerHTML=S.cfg.Monitor.map(m=>`<a data-v="isrf" data-m="${esc(m.code)}"><b>${esc(m.code)}</b>${esc(m.name)}</a>`).join("");mark()}
+function view(v){V=v;mark();["home","isrf","rep","set","prf"].forEach(x=>$("v-"+x).classList.toggle("hide",x!==v));if(v==="set")loadSet();if(v==="home")renderHome();if(v==="isrf"&&S.token)draw();if(v==="prf"&&S.token)prfStartView()}
+async function load(){try{const d=await api("list");S.rows=d.rows;S.cfg=d.cfg;applyBrand(d.cfg);if(!S.cfg.Monitor.some(m=>m.code===S.mon))S.mon=S.cfg.Monitor[0].code;nav();filters();draw();if(V==="home")renderHome()}catch(e){toast(e.message)}}
+const bn=()=>S.cfg.Branch.map(b=>b.name),areas=()=>[...new Set(S.cfg.Branch.map(b=>b.area).filter(Boolean))];
+const opts=a=>a.map(x=>`<option>${esc(x)}</option>`).join("");
+const DEF=[{l:"Error type",t:"select",src:"err",c:"ErrorType",r:1},{l:"Documents damaged",t:"text",c:"DocsDamage"},{l:"Problem details",t:"textarea",c:"ProblemDetails",r:1}];
+const fieldsOf=c=>(S.cfg.Fields&&S.cfg.Fields[c])||DEF;
+const dat=r=>{try{return JSON.parse(r.Data||"{}")}catch(e){return{}}},fv=(r,f)=>f.c?r[f.c]:dat(r)[f.l];
+const deptNotes=r=>{const N=notes(r);return Object.keys(N).filter(k=>k!=="ISD"&&N[k].sig).map(k=>{const s=fmt(N[k].sig);return k+" ("+s.n+", "+s.t+"): "+(N[k].text||"-")}).join("\n")};
+const ansOf=r=>{const s=fmt(r.AnsweredBy),N=notes(r);return{by:s?s.n:"",at:s?s.t:"",txt:(N.ISD&&N.ISD.text)||""}};
+const summary=r=>fieldsOf(r.Monitoring).map(f=>f.l+": "+(fv(r,f)||"-")).join("; "),sumShort=r=>fieldsOf(r.Monitoring).filter(f=>f.t!=="textarea").slice(0,2).map(f=>f.l+": "+(fv(r,f)||"-")).join(", ");
+const allowed=()=>{const t=(S.user.branch||"").split(",").map(x=>x.trim()).filter(Boolean);return S.user.role==="Admin"||t.includes("*")?bn():S.cfg.Branch.filter(b=>t.includes(b.name)||t.includes("@"+b.area)).map(b=>b.name)};
+const mon=c=>S.cfg.Monitor.find(m=>m.code===c)||{code:c,name:c||"ISRF"},errs=()=>S.cfg.ErrorType.filter(e=>!e.mon||e.mon===S.mon).map(e=>e.name);
+function filters(){const fb=$("fb").value,fs=$("fs").value;
+  $("fb").innerHTML='<option value="">All branches</option>'+opts(bn());
+  $("fs").innerHTML='<option value="">All statuses</option>'+["Pending Branch Approval","For ISD Decision","Pending Note","For Execution","For Review","Completed","Rejected"].map(b=>`<option>${b}</option>`).join("");
+  $("fb").value=fb;$("fs").value=fs;repNames()}
+["q","fb","fs"].forEach(i=>$(i).oninput=draw);
+function draw(){
+  const rs=S.rows.filter(r=>r.Monitoring===S.mon).map(r=>({...r,st:status(r)})),c=(...f)=>rs.filter(r=>f.some(x=>r.st.startsWith(x))).length;
+  $("stats").innerHTML=[["Total",rs.length,"#10243a"],["Awaiting approval / ISD",c("Pending Branch","For ISD"),"#b45309"],["With departments",c("Pending Note"),"#7c3aed"],["For execution / review",c("For Execution","For Review"),"#1d4ed8"],["Completed",c("Completed"),"#15803d"],["Rejected",c("Rejected"),"#b91c1c"]]
+   .map(([l,n,col])=>`<div class="stat" style="--c:${col}"><b>${n}</b><span>${l}</span></div>`).join("");
+  const q=$("q").value.toLowerCase(),f=rs.filter(r=>(!$("fb").value||r.Branch===$("fb").value)&&(!$("fs").value||r.st.startsWith($("fs").value))&&(!q||JSON.stringify(r).toLowerCase().includes(q))).reverse();
+  const fs=fieldsOf(S.mon).filter(g=>g.t!=="textarea").slice(0,2);$("th").innerHTML=["ID","Date","Area","Branch",...fs.map(g=>g.l),"Requested by","Status"].map(x=>`<th>${esc(x)}</th>`).join("");
+  $("tb").innerHTML=f.map(r=>`<tr class="r" data-id="${esc(r.ID)}"><td><b>${esc(r.ID)}</b></td><td>${esc(r.Date)}</td><td>${esc(r.Area)}</td><td>${esc(r.Branch)}</td>${fs.map(g=>`<td>${esc(fv(r,g))}</td>`).join("")}<td>${esc((fmt(r.RequestedBy)||{}).n||"")}</td><td><span class="badge ${cls(r.st)}">${esc(r.st)}</span></td></tr>`).join("");
+  $("em").classList.toggle("hide",f.length>0);document.querySelectorAll("tr.r").forEach(t=>t.onclick=()=>detail(t.dataset.id))}
+const closeM=()=>$("mo").innerHTML="";
+const modal=h=>{$("mo").innerHTML=`<div class="ov"><div class="modal">${h}</div></div>`;$("mo").querySelector(".ov").onmousedown=e=>{if(e.target.classList.contains("ov"))closeM()}};
+async function run(a,p,m){try{const r=await api(a,p);closeM();toast(m);load()}catch(e){toast(e.message)}}
+function form(r){const e=!!r,al=allowed();if(!e&&!al.length)return toast("No branch is assigned to your account. Ask the administrator.");
+  r=r||{Date:new Date().toISOString().slice(0,10),Monitoring:S.mon};const mc=r.Monitoring||S.mon,fs=fieldsOf(mc);
+  const inp=(f,i)=>{const v=fv(r,f)??"",id="ff"+i,lab=`<label>${esc(f.l)}${f.r?" *":""}</label>`;
+   if(f.t==="textarea")return`<div style="grid-column:1/-1">${lab}<textarea id="${id}" rows="4">${esc(v)}</textarea></div>`;
+   if(f.t==="select"){const o=[...new Set([v,...(f.src==="err"?errs():f.o||[])].filter(Boolean))];return`<div>${lab}<select id="${id}"><option value=""></option>${opts(o)}</select></div>`}
+   return`<div>${lab}<input id="${id}" type="${f.t==="number"?"number":f.t==="date"?"date":"text"}"${f.t==="number"?' step="any"':""} value="${esc(v)}"></div>`};
+  modal(`<h2>${e?"Edit "+esc(r.ID):"New "+esc(mon(mc).name)}</h2><div style="color:var(--mute)">${e?"":"You will be recorded as the requester."}</div>
+  <div class="g2"><div><label>Date *</label><input type="date" id="n1" value="${esc(r.Date)}"></div><div><label>Branch *</label><select id="n2">${opts(e?bn():al)}</select></div>${fs.map(inp).join("")}</div>
+  ${e?"":`<label>Attachments (optional)</label><input type="file" id="nf" multiple accept=".pdf,.jpg,.jpeg,.png"><small style="color:var(--mute);display:block">PDF, JPG or PNG. Max ${S.cfg.Settings.MaxFileMB} MB each, ${S.cfg.Settings.MaxFiles} files. Photos are compressed automatically.</small>`}
+  <div class="acts"><button class="btn sec" onclick="closeM()">Cancel</button><button class="btn" id="ns">${e?"Save changes":"Submit"}</button></div>`);
+  $("n2").value=r.Branch||al[0];fs.forEach((f,i)=>{if(f.t==="select")$("ff"+i).value=fv(r,f)||""});
+  $("ns").onclick=()=>{const d={Date:$("n1").value,Branch:$("n2").value,Monitoring:mc,Data:{}};
+   if(!d.Date||!d.Branch)return toast("Date and branch are required");
+   for(const[i,f]of fs.entries()){const v=$("ff"+i).value.trim();if(f.r&&!v)return toast(f.l+" is required");if(f.c)d[f.c]=v;else d.Data[f.l]=v}
+   $("ns").disabled=true;submitForm(d,e,r)}}
+async function submitForm(d,e,r){try{if(e){await api("update",{id:r.ID,data:d});closeM();toast("Updated")}else{const id=await api("create",{data:d}),fs=$("nf")?[...$("nf").files]:[];
+  for(const f0 of fs){try{toast("Uploading "+f0.name+"...");const f=await shrink(f0);await api("upload",{id,name:f.name,mime:f.type,b64:await b64(f)})}catch(x){toast(x.message)}}closeM();toast(id+" submitted")}load()}catch(x){toast(x.message);if($("ns"))$("ns").disabled=false}}
+$("nb").onclick=()=>form();
+function detail(id){
+  const r=S.rows.find(x=>x.ID===id),st=status(r),u=S.user,ro=u.role,adm=ro==="Admin",isd=adm||ro==="ISD",N=notes(r),open=st!=="Completed"&&st!=="Rejected";
+  const fw=(r.ForwardTo||"").split(",").filter(Boolean),pend=fw.filter(d=>!(N[d]&&N[d].sig));
+  const box=(l,v)=>{const s=fmt(v);return`<div class="step ${s?"done":""}"><small>${l}</small>${s?`<div class="sig">${esc(s.n)}</div><small>${s.t}</small>`:"<small>-</small>"}</div>`};
+  let flow=box("Requested by",r.RequestedBy)+box("Approved by (branch)",r.ApprovedBy)
+   +fw.map(d=>box("Noted by "+d,N[d]&&N[d].sig)).join("")+box("Answered by (ISD)",r.AnsweredBy)+box("Reviewed by",r.ReviewedBy);
+  const nl=Object.keys(N).map(k=>`<div style="margin-top:8px"><b>${esc(k)} remarks</b> <small style="color:var(--mute)">${esc((fmt(N[k].sig)||{}).n||"")}</small><div style="white-space:pre-wrap">${esc(N[k].text)||"-"}</div></div>`).join("");
+  const locked=!!(r.AnsweredBy||r.ReviewedBy||r.Status==="Rejected"),SE=S.cfg.Settings,up=ro!=="Viewer"&&(open||adm)?`<input type="file" id="fu" multiple accept=".pdf,.jpg,.jpeg,.png" style="margin-top:8px"><small style="color:var(--mute);display:block">PDF, JPG or PNG. Max ${SE.MaxFileMB} MB each, ${SE.MaxFiles} files per request. Photos are compressed automatically.</small>`:"";
+  let act="";
+  if(open&&!r.Decision&&isd)act+=`<h3 style="margin-top:16px">ISD decision</h3><select id="dd"><option value="Execute">For execution</option><option value="Forward">Forward to departments for notes</option></select>
+   <div id="dp" class="hide" style="margin-top:8px">${r.ApprovedBy?S.cfg.Dept.map(d=>`<label style="font-weight:400"><input type="checkbox" class="dc" value="${esc(d)}" style="width:auto"> ${esc(d)}</label>`).join(""):`<div class="demo">Forwarding needs branch approval first.</div>`}</div>
+   <div class="acts"><button class="btn" id="dgo">Save decision</button></div>`;
+  pend.filter(d=>open&&(adm||(ro==="Dept"&&u.dept===d))).forEach(d=>act+=`<div class="nbox" data-d="${esc(d)}"><h3 style="margin-top:16px">${esc(d)} note</h3><textarea rows="3" placeholder="Note from ${esc(d)}"></textarea><div class="acts"><button class="btn nb2">Sign and add note</button></div></div>`);
+  if(open&&isd&&st==="For Execution")act+=`<h3 style="margin-top:16px">Execution</h3><textarea id="ex" rows="3" placeholder="ISD remarks (optional)"></textarea><div class="acts"><button class="btn" id="eg">Mark executed and sign</button></div>`;
+  modal(`<div style="display:flex;justify-content:space-between;gap:10px"><div><h2>${esc(r.ID)}</h2><div style="color:var(--mute)">${esc(mon(r.Monitoring).name)} - ${esc(r.Date)} - ${esc(r.Area)} / ${esc(r.Branch)}</div></div><span class="badge ${cls(st)}" style="align-self:flex-start">${esc(st)}</span></div>
+  <dl class="kv">${fieldsOf(r.Monitoring).map(f=>`<dt>${esc(f.l)}</dt><dd style="white-space:pre-wrap">${esc(fv(r,f))||"-"}</dd>`).join("")}</dl>
+  <h3>Sign-offs</h3><div class="flow">${flow}</div>${nl}${act}<h3 style="margin-top:16px">Attachments</h3><div id="fl">Loading...</div>${up}<h3 style="margin-top:16px">Follow-ups and messages</h3><div id="ml">Loading...</div>${ro!=="Viewer"?`<textarea id="mt" rows="2" placeholder="Write a message or question about this request" style="margin-top:8px"></textarea><div class="acts2"><button class="btn sec" id="mfu" type="button">Ask for progress update</button><button class="btn" id="msd" type="button">Send message</button></div>`:""}
+  <div class="acts" style="border-top:1px solid var(--line);padding-top:14px"><button class="btn sec" onclick="closeM()">Close</button><button class="btn sec" id="pr">Print</button><button class="btn sec" id="sn">Send</button>
+  ${isd&&!locked?`<button class="btn sec" id="ed">Edit</button>`:""}${isd&&st==="Pending Branch Approval"?`<button class="btn red" id="dl">Delete</button>`:""}${adm&&locked?`<button class="btn sec" id="rtn">Return...</button>`:""}${adm&&!locked&&open&&st!=="Pending Branch Approval"?`<button class="btn sec" id="bp">Back to pending</button>`:""}
+  ${open&&!r.AnsweredBy&&(isd||ro==="Approver")?`<button class="btn sec" id="rj">Reject</button>`:""}
+  ${open&&!r.ApprovedBy&&(adm||ro==="Approver")?`<button class="btn" id="ap">Approve (branch)</button>`:""}
+  ${open&&(adm||ro==="Reviewer")&&st==="For Review"?`<button class="btn" id="rv">Review and complete</button>`:""}</div>`);
+  const act2=(t,d,m)=>run("act",{id,type:t,data:d},m),on=(i,f)=>$(i)&&($(i).onclick=f);
+  on("pr",()=>printReq(r,adm&&!!r.ReviewedBy&&confirm("Include the Reviewed by sign-off on this printout?\nOK = include it, Cancel = leave it out.")));on("sn",()=>sendReq(r));loadFiles(r);setupUp(r);loadMsgs(r);on("rtn",()=>returnReq(r));on("bp",()=>confirm("Bring this request back to Pending Branch Approval?\nThe approval, ISD decision and department notes will be cleared. You can then delete it.")&&run("return",{id:r.ID,data:{to:"pending",reason:"Brought back to pending by the administrator"}},"Back to pending"));const post=async k=>{try{const n=await api("msg",{id:r.ID,text:$("mt").value,kind:k,link:location.href.split("#")[0]});$("mt").value="";toast(n?"Sent. "+n+" person(s) emailed.":"Added to the request");loadMsgs(r);poll()}catch(e){toast(e.message)}};on("mfu",()=>post("followup"));on("msd",()=>post("message"));on("ap",()=>act2("approve",{},"Approved"));on("rv",()=>act2("review",{},"Completed"));on("rj",()=>confirm("Reject this ISRF?")&&act2("reject",{},"Rejected"));
+  on("ed",()=>form(r));on("dl",()=>confirm("Delete "+id+" permanently?")&&run("delete",{id},"Deleted"));
+  on("eg",()=>act2("answer",{text:$("ex").value},"Executed"));
+  if($("dd"))$("dd").onchange=()=>$("dp").classList.toggle("hide",$("dd").value!=="Forward");
+  on("dgo",()=>act2("decide",{decision:$("dd").value,forward:[...document.querySelectorAll(".dc:checked")].map(x=>x.value)},"Decision saved"));
+  document.querySelectorAll(".nbox").forEach(b=>b.querySelector(".nb2").onclick=()=>act2("note",{dept:b.dataset.d,text:b.querySelector("textarea").value},"Note added"))}
+/* ---- send by email / SMS ---- */
+function sendReq(r){const st=status(r),m=mon(r.Monitoring);let last={};try{last=JSON.parse(localStorage.getItem("isrf_rc"))||{}}catch(x){}
+  modal(`<h2>Send ${esc(r.ID)}</h2><div style="color:var(--mute)">${esc(m.name)} - ${esc(st)}</div>
+  <label>Email to (separate with commas)</label><input id="q1" value="${esc(last.e||"")}" placeholder="name@company.com">
+  <label>Mobile number(s) for SMS</label><input id="q2" value="${esc(last.p||"")}" placeholder="09XXXXXXXXX">
+  <label>Message (optional)</label><textarea id="q3" rows="3"></textarea>
+  <label style="font-weight:400"><input type="checkbox" id="q4" style="width:auto"> Attach the uploaded files to the email</label>${S.user.role==="Admin"&&r.ReviewedBy?`<label style="font-weight:400"><input type="checkbox" id="q5" style="width:auto"> Include the Reviewed by sign-off (admin only)</label>`:""}
+  <div class="acts"><button class="btn sec" onclick="closeM()">Cancel</button><button class="btn sec" id="qs">Open SMS app</button>${S.cfg.SmsOn?'<button class="btn sec" id="qg">Send SMS</button>':""}<button class="btn" id="qe">Send email</button></div>`);
+  const rem=()=>{try{localStorage.setItem("isrf_rc",JSON.stringify({e:$("q1").value,p:$("q2").value}))}catch(x){}};
+  const txt=()=>`${BR.name||"IS PROJECTS"} - ${m.name}\n${r.ID}\nBranch: ${r.Branch}\n${sumShort(r)}\nStatus: ${st}${$("q3").value?"\n"+$("q3").value:""}`;
+  $("qe").onclick=async()=>{rem();$("qe").disabled=true;try{const n=await api("email",{id:r.ID,to:$("q1").value,message:$("q3").value,attach:$("q4").checked,incReview:!!($("q5")&&$("q5").checked)});closeM();toast("Email sent to "+n+" recipient(s)")}catch(e){toast(e.message);$("qe").disabled=false}};
+  $("qs").onclick=()=>{rem();const n=$("q2").value.replace(/[^\d+,;]/g,"").replace(/;/g,",");if(!n)return toast("Enter a mobile number");location.href="sms:"+n+"?&body="+encodeURIComponent(txt())};
+  if($("qg"))$("qg").onclick=async()=>{rem();try{const n=await api("sms",{id:r.ID,to:$("q2").value,message:txt()});closeM();toast("SMS sent to "+n+" number(s)")}catch(e){toast(e.message)}}}
+/* ---- sign up ---- */
+function signupForm(){modal(`<h2>Create an account</h2><div style="color:var(--mute)">Your request is reviewed by the administrator. You will be notified by email or text once it is approved.</div>
+  <div class="g2"><div><label>Full name *</label><input id="z1"></div><div><label>Username *</label><input id="z2" autocomplete="username"></div>
+  <div><label>Email *</label><input id="z3" type="email"></div><div><label>Contact number *</label><input id="z4" type="tel" placeholder="09XXXXXXXXX"></div>
+  <div><label>Branch / office</label><select id="z5"><option value="">(not sure)</option>${opts(PUB.Branches||[])}</select></div><div><label>Position or reason for access</label><input id="z6"></div>
+  <div><label>Password * (at least 8 characters)</label><input id="z7" type="password" autocomplete="new-password"></div><div><label>Confirm password *</label><input id="z8" type="password" autocomplete="new-password"></div></div>
+  <input id="z9" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px"><div class="err" id="ze"></div>
+  <div class="acts"><button class="btn sec" onclick="closeM()">Cancel</button><button class="btn" id="zs">Send request</button></div>`);
+  $("zs").onclick=async()=>{const g=i=>$(i).value.trim();$("ze").textContent="";
+   if(!g("z1")||!g("z2")||!g("z3")||!g("z4")||!$("z7").value)return $("ze").textContent="Please fill in all fields marked with *";
+   if($("z7").value.length<8)return $("ze").textContent="Password must be at least 8 characters";
+   if($("z7").value!==$("z8").value)return $("ze").textContent="Passwords do not match";
+   $("zs").disabled=true;
+   try{const m=await api("signup",{data:{name:g("z1"),username:g("z2"),email:g("z3"),phone:g("z4"),branch:$("z5").value,note:g("z6"),password:$("z7").value,website:$("z9").value}});
+    modal(`<h2>Request sent</h2><p>${esc(m)}</p><div class="acts"><button class="btn" onclick="closeM()">OK</button></div>`)}
+   catch(e){$("ze").textContent=e.message;$("zs").disabled=false}}}
+$("lsa").onclick=e=>{e.preventDefault();signupForm()};
+/* ---- passwords ---- */
+function forgotDlg(){modal(`<h2>Forgot password</h2><div style="color:var(--mute)">Enter your username or email. The administrator is notified and will send you a temporary password by email or text.</div><label>Username or email</label><input id="fg1"><div class="err" id="fge"></div>
+  <div class="acts"><button class="btn sec" onclick="closeM()">Cancel</button><button class="btn" id="fg2">Notify administrator</button></div>`);
+  $("fg2").onclick=async()=>{try{const m=await api("forgot",{id:$("fg1").value.trim()});modal(`<h2>Request sent</h2><p>${esc(m)}</p><div class="acts"><button class="btn" onclick="closeM()">OK</button></div>`)}catch(e){$("fge").textContent=e.message}}}
+$("lfg").onclick=e=>{e.preventDefault();forgotDlg()};
+function changePwDlg(force){modal(`<h2>${force?"Set a new password":"Change password"}</h2><div style="color:var(--mute)">${force?"You signed in with a temporary password. Choose a new one to continue.":"Enter your current password and a new one."}</div>
+  <label>Current${force?" (temporary)":""} password</label><input id="cp1" type="password" autocomplete="current-password"><label>New password (at least 8 characters)</label><input id="cp2" type="password" autocomplete="new-password"><label>Confirm new password</label><input id="cp3" type="password" autocomplete="new-password"><div class="err" id="cpe"></div>
+  <div class="acts">${force?"":'<button class="btn sec" onclick="closeM()">Cancel</button>'}<button class="btn" id="cp4">Save password</button></div>`);
+  if(force)$("mo").querySelector(".ov").onmousedown=null;
+  $("cp4").onclick=async()=>{if($("cp2").value.length<8)return $("cpe").textContent="New password must be at least 8 characters";if($("cp2").value!==$("cp3").value)return $("cpe").textContent="Passwords do not match";
+   try{const d=await api("changePassword",{old:$("cp1").value,pw:$("cp2").value});S.token=d.token;saveTok(d.token);S.user.mustChange=false;closeM();toast("Password changed")}catch(e){$("cpe").textContent=e.message}}}
+function credDlg(x){const txt=`${BR.name||"IS PROJECTS"}: Hi ${x.name}, your username is ${x.username} and your temporary password is ${x.temp}. Sign in at ${location.href.split("#")[0]} and change it right away.`;
+  modal(`<h2>Temporary password ready</h2><p>${esc(x.name)} (${esc(x.username)}) must choose a new password at the next sign-in.</p><p>Temporary password: <b style="font-size:18px;letter-spacing:.05em">${esc(x.temp)}</b></p><p>${x.emailed?"It was emailed to "+esc(x.email)+".":"Email was not sent (no email on file or mail failed)."}</p>
+  <div class="acts"><button class="btn sec" onclick="closeM()">Close</button><button class="btn sec" id="cd1">Open SMS app</button>${S.cfg.SmsOn?'<button class="btn" id="cd2">Send SMS</button>':""}</div>`);
+  $("cd1").onclick=()=>{location.href="sms:"+String(x.phone).replace(/[^\d+]/g,"")+"?&body="+encodeURIComponent(txt)};
+  if($("cd2"))$("cd2").onclick=async()=>{try{await api("smsRaw",{to:x.phone,message:txt});toast("SMS sent");closeM()}catch(e){toast(e.message)}}}
+$("urp").onclick=async()=>{const u=$("u1").value.trim();if(!u)return toast("Click a user in the table first");if(!confirm("Create a temporary password for "+u+" and send it by email?"))return;
+  try{credDlg(await api("resetPassword",{username:u,link:location.href.split("#")[0]}))}catch(e){toast(e.message)}};
+/* ---- database export ---- */
+const dl=(name,text,type)=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()};
+function sqlOf(tables){const q=s=>"N'"+String(s).replace(/'/g,"''")+"'";let o="-- IS PROJECTS export "+new Date().toISOString()+"\nSET NOCOUNT ON;\nGO\n";
+  tables.forEach(t=>{const cols=t.cols.map(c=>"  ["+c+"] "+(c===t.pk?"NVARCHAR(100) NOT NULL PRIMARY KEY":t.bit.includes(c)?"BIT NULL":"NVARCHAR(MAX) NULL")).join(",\n");
+   o+=`IF OBJECT_ID(N'dbo.${t.name}', N'U') IS NULL\nCREATE TABLE [dbo].[${t.name}] (\n${cols}\n);\nGO\n`;
+   for(let i=0;i<t.rows.length;i+=100)o+=`INSERT INTO [dbo].[${t.name}] (${t.cols.map(c=>"["+c+"]").join(", ")}) VALUES\n`+t.rows.slice(i,i+100).map(r=>"("+r.map((v,j)=>t.bit.includes(t.cols[j])?(v===true||String(v).toUpperCase()==="TRUE"?1:0):q(v)).join(", ")+")").join(",\n")+";\nGO\n"});return o}
+$("xs").onclick=async()=>{try{toast("Preparing export...");dl("is-projects-"+new Date().toISOString().slice(0,10)+".sql","\uFEFF"+sqlOf(await api("export")),"application/sql")}catch(e){toast(e.message)}};
+$("xj").onclick=async()=>{try{toast("Preparing backup...");dl("is-projects-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(await api("export"),null,1),"application/json")}catch(e){toast(e.message)}};
+$("xt").onclick=async()=>{const d={host:$("xh").value.trim(),port:$("xp").value.trim(),db:$("xd").value.trim(),user:$("xu").value.trim(),pass:$("xw").value,trust:$("xc").checked,replace:$("xr").checked};if(!d.host||!d.db||!d.user)return toast("Host, database and login are required");
+  if(!confirm("Transfer all data to "+d.host+" / "+d.db+"?"+(d.replace?"\nExisting rows in these tables will be deleted first.":"")))return;$("xt").disabled=true;toast("Transferring... this can take a minute");
+  try{const o=await api("transferSql",{data:d});$("xw").value="";modal(`<h2>Transfer complete</h2><p>${Object.keys(o).map(k=>esc(k)+": "+o[k]+" rows").join("<br>")}</p><div class="acts"><button class="btn" onclick="closeM()">Close</button></div>`)}catch(e){toast(e.message)}finally{$("xt").disabled=false}};
+const gp=()=>{const a=$("m3").value==="android";document.querySelectorAll(".gp-a").forEach(e=>e.classList.toggle("hide",!a));document.querySelectorAll(".gp-s").forEach(e=>e.classList.toggle("hide",a))};$("m3").onchange=gp;
+/* ---- admin: account requests ---- */
+const accBadge=()=>{const n=ACC.filter(a=>a.Status==="Pending").length;$("sbd").textContent=n;$("sbd").classList.toggle("hide",!n)};
+function approvedDlg(x){const txt=`${BR.name||"IS PROJECTS"}: Hi ${x.name}, your account is approved. Username: ${x.username}. Sign in with the password you created: ${location.href.split("#")[0]}`;
+  modal(`<h2>Account approved</h2><p>${esc(x.name)} (${esc(x.username)}) can now sign in.</p><p>${x.emailed?"An approval email was sent to "+esc(x.email)+".":"The email could not be sent. Please contact the user."}</p><p>Contact number: <b>${esc(x.phone)}</b></p>
+  <div class="acts"><button class="btn sec" onclick="closeM()">Close</button><button class="btn sec" id="at1">Open SMS app</button>${S.cfg.SmsOn?'<button class="btn" id="at2">Send SMS</button>':""}</div>`);
+  $("at1").onclick=()=>{location.href="sms:"+String(x.phone).replace(/[^\d+]/g,"")+"?&body="+encodeURIComponent(txt)};
+  if($("at2"))$("at2").onclick=async()=>{try{await api("smsRaw",{to:x.phone,message:txt});toast("SMS sent");closeM()}catch(e){toast(e.message)}}}
+async function fillAccounts(){try{ACC=await api("signups")}catch(e){ACC=[]}accBadge();
+  const so='<option value="*">All branches and offices</option>'+areas().map(a=>`<option value="@${esc(a)}">Whole area: ${esc(a)}</option>`).join("")+S.cfg.Branch.map(b=>`<option value="${esc(b.name)}">${esc(b.name)}</option>`).join("");
+  $("acc").innerHTML=ACC.map(a=>{const head=`<b>${esc(a.Name)}</b> (${esc(a.Username)}) <span class="badge ${a.Kind==="existing"||a.Kind==="reset"?"Rejected":""}">${a.Kind==="existing"?"Existing account":a.Kind==="reset"?"Password reset":"New"}</span><div class="bm">${esc(a.Email)} - ${esc(a.Phone)}${a.Branch?" - requested: "+esc(a.Branch):""}${a.Note?"<br>"+esc(a.Note):""}</div>`;
+   if(a.Status!=="Pending")return`<div class="bm" style="padding:4px 0">${esc(a.Name)} (${esc(a.Username)}) - ${esc(a.Status)}${a.Reason?": "+esc(a.Reason):""}</div>`;
+   if(a.Kind==="reset")return`<div class="fr ac" data-id="${esc(a.ID)}" style="display:block">${head}<div class="bm" style="color:var(--amber)">Forgot password. Send a temporary password by email, then text it if needed.</div><div class="acts2"><button class="btn sec sm ad" type="button">Dismiss</button><button class="btn sm ap" type="button">Send temporary password</button></div></div>`;
+   if(a.Kind==="existing")return`<div class="fr ac" data-id="${esc(a.ID)}" style="display:block">${head}<div class="bm" style="color:var(--amber)">This username or email already belongs to the account "${esc(a.ExistingUser)}". Update that account with these details, or dismiss.</div><div class="acts2"><button class="btn sec sm ad" type="button">Dismiss</button><button class="btn sm au" type="button">Update existing account</button></div></div>`;
+   return`<div class="fr ac" data-id="${esc(a.ID)}" style="display:block">${head}<div class="g2"><div><label>Role</label><select class="ar1"><option>User</option><option>Approver</option><option>ISD</option><option>Dept</option><option>Reviewer</option><option>Viewer</option><option>Admin</option></select></div>
+   <div><label>Department (for Dept role)</label><select class="ar3"><option value=""></option>${opts(S.cfg.Dept)}</select></div><div style="grid-column:1/-1"><label>Visible branches / offices</label><select class="ar2" multiple size="5">${so}</select></div></div>
+   <div class="acts2"><button class="btn red sm ax" type="button">Reject</button><button class="btn sm aa" type="button">Approve</button></div></div>`}).join("")||'<div class="bm">No account requests.</div>';
+  $("acc").querySelectorAll(".ac").forEach(c=>{const a=ACC.find(x=>x.ID===c.dataset.id),q=s=>c.querySelector(s),go=async(act,p,m)=>{try{await api(act,{id:a.ID,...p});toast(m);fillAccounts();loadSet2()}catch(e){toast(e.message)}};
+   if(q(".ar2"))[...q(".ar2").options].forEach(o=>{if(o.value===a.Branch)o.selected=true});
+   if(q(".aa"))q(".aa").onclick=async()=>{try{const x=await api("approveSignup",{id:a.ID,data:{role:q(".ar1").value,dept:q(".ar3").value,branch:[...q(".ar2").selectedOptions].map(o=>o.value).join(",")},link:location.href.split("#")[0]});approvedDlg(x);fillAccounts();loadSet2()}catch(e){toast(e.message)}};
+   if(q(".ap"))q(".ap").onclick=async()=>{try{const x=await api("resetPassword",{username:a.ExistingUser,id:a.ID,link:location.href.split("#")[0]});credDlg(x);fillAccounts();loadSet2()}catch(e){toast(e.message)}};
+   if(q(".ax"))q(".ax").onclick=()=>{const r=prompt("Reason (optional)");if(r!==null)go("rejectSignup",{reason:r},"Request rejected")};
+   if(q(".au"))q(".au").onclick=()=>confirm("Replace the name, email and contact number of \""+a.ExistingUser+"\" with these details? The password is not changed.")&&go("applyExisting",{},"Account updated");
+   if(q(".ad"))q(".ad").onclick=()=>go("dismissSignup",{},"Dismissed")})}
+const loadSet2=async()=>{try{const u=await api("listUsers");S.users=u;$("ut").innerHTML=u.map((x,i)=>`<tr class="r" data-i="${i}"><td>${esc(x.username)}</td><td>${esc(x.name)}</td><td>${x.role}</td><td>${esc(x.branch)}</td><td>${esc(x.dept)}</td><td>${esc(x.email)}<br>${esc(x.phone)}</td><td>${x.active?"Yes":"No"}</td></tr>`).join("")}catch(e){}};
+/* ---- messages, follow-ups, return, alerts ---- */
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},seenKey=()=>"isrf_seen_"+(S.user&&S.user.username);
+const fAt=t=>{const d=new Date(t);return isNaN(d)?"":d.toLocaleDateString("en-GB")+" "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})};
+let INBOX=[];
+async function poll(){if(!S.token)return;try{INBOX=await api("inbox");const seen=Number(lsGet(seenKey())||0),n=INBOX.filter(m=>new Date(m.At).getTime()>seen).length;
+  ["bd","bd2"].forEach(i=>{$(i).textContent=n;$(i).classList.toggle("hide",!n)});if(S.user.role==="Admin"){try{ACC=await api("signups");accBadge()}catch(e){}}if(V==="home"&&$("v-home").innerHTML)renderHome()}catch(e){}}
+function openAlerts(){document.body.classList.remove("drawer");view("home");setTimeout(()=>{lsSet(seenKey(),Date.now());["bd","bd2"].forEach(i=>$(i).classList.add("hide"))},2500)}
+async function loadMsgs(r){const el=$("ml");if(!el)return;
+  try{const m=await api("msgs",{id:r.ID});el.innerHTML=m.map(x=>`<div class="ms"><b>${esc(x.By)}</b> <small>${esc(x.Role)} - ${esc(fAt(x.At))}</small>${x.Kind==="followup"?' <span class="badge">Follow-up</span>':x.Kind==="return"?' <span class="badge Rejected">Returned</span>':""}<div style="white-space:pre-wrap">${esc(x.Text)}</div></div>`).join("")||'<div class="bm">No messages yet.</div>'}catch(e){el.textContent=e.message}}
+function returnReq(r){const fw=(r.ForwardTo||"").split(",").filter(Boolean);
+  modal(`<h2>Return ${esc(r.ID)}</h2><div style="color:var(--mute)">Send this request back to an earlier step. Signatures after that step are cleared.</div>
+  <label>Return to</label><select id="rr1"><option value="notation">For notation (departments)</option><option value="approval">For approval again</option><option value="execution">For execution</option></select>
+  <div id="rr2" style="margin-top:8px">${S.cfg.Dept.map(d=>`<label style="font-weight:400"><input type="checkbox" class="rd" value="${esc(d)}" ${fw.includes(d)?"checked":""} style="width:auto"> ${esc(d)}</label>`).join("")}</div>
+  <label>Reason (saved in the request messages)</label><textarea id="rr3" rows="3"></textarea>
+  <div class="acts"><button class="btn sec" onclick="closeM()">Cancel</button><button class="btn" id="rrg">Return request</button></div>`);
+  $("rr1").onchange=()=>$("rr2").classList.toggle("hide",$("rr1").value!=="notation");$("rr1").value=fw.length?"notation":"execution";$("rr1").onchange();
+  $("rrg").onclick=()=>run("return",{id:r.ID,data:{to:$("rr1").value,depts:[...document.querySelectorAll(".rd:checked")].map(x=>x.value),reason:$("rr3").value}},"Request returned")}
+/* ---- attachments ---- */
+const fsz=n=>n>1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB";
+const b64=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result.split(",")[1]);x.readAsDataURL(f)});
+const shrink=f=>!/^image\//.test(f.type)?Promise.resolve(f):new Promise(res=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(b=>res(new File([b],f.name.replace(/\.\w+$/,"")+".jpg",{type:"image/jpeg"})),"image/jpeg",.72)};im.onerror=()=>res(f);im.src=URL.createObjectURL(f)});
+async function loadFiles(r){const el=$("fl");if(!el)return;
+  try{const fl=await api("files",{id:r.ID}),u=S.user,isOpen=!["Completed","Rejected"].includes(status(r));
+   el.innerHTML=fl.map(f=>`<div class="fr"><span>${esc(f.Name)} <small>${fsz(f.Size)} - ${esc(f.UploadedBy)} - ${esc(String(f.UploadedAt).slice(0,10))}</small></span><span><button class="btn sec sm" data-g="${f.FileId}">Download</button>${["Admin","ISD"].includes(u.role)||(f.UploadedBy===u.username&&isOpen)?`<button class="btn sec sm" data-x="${f.FileId}">Delete</button>`:""}</span></div>`).join("")||'<div style="color:var(--mute)">No attachments</div>';
+   el.querySelectorAll("[data-g]").forEach(b=>b.onclick=async()=>{try{const d=await api("getFile",{fileId:b.dataset.g}),bin=atob(d.b64),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);const l=document.createElement("a");l.href=URL.createObjectURL(new Blob([a],{type:d.mime}));l.download=d.name;l.click()}catch(e){toast(e.message)}});
+   el.querySelectorAll("[data-x]").forEach(b=>b.onclick=async()=>{if(!confirm("Delete this attachment?"))return;try{await api("delFile",{fileId:b.dataset.x});loadFiles(r)}catch(e){toast(e.message)}})}catch(e){el.textContent=e.message}}
+function setupUp(r){const i=$("fu");if(!i)return;i.onchange=async()=>{for(const f0 of i.files){try{toast("Uploading "+f0.name+"...");const f=await shrink(f0);await api("upload",{id:r.ID,name:f.name,mime:f.type,b64:await b64(f)});toast("Uploaded "+f.name)}catch(e){toast(e.message)}}i.value="";loadFiles(r)}}
+/* ---- reports ---- */
+function repNames(){const g=$("rg").value,v=$("rn").value,m=$("rm").value;$("rm").innerHTML='<option value="">All monitoring</option>'+S.cfg.Monitor.map(x=>`<option value="${esc(x.code)}">${esc(x.name)}</option>`).join("");$("rm").value=$("rm").dataset.i?m:(S.mon||"");$("rm").dataset.i=1;$("rn").innerHTML=`<option value="">All ${g==="Area"?"areas":"branches"}</option>`+opts(g==="Area"?areas():bn());$("rn").value=v}
+$("rg").onchange=()=>{$("rn").value="";repNames()};
+$("rb").onclick=()=>{const g=$("rg").value,n=$("rn").value,f=$("rf").value,t=$("rt").value,m=$("rm").value;
+  REP=S.rows.map(r=>({...r,st:status(r)})).filter(r=>(!m||r.Monitoring===m)&&(!n||r[g]===n)&&(!f||r.Date>=f)&&(!t||r.Date<=t));
+  const grp={};REP.forEach(r=>{const k=r[g]||"(none)";(grp[k]=grp[k]||[]).push(r)});
+  const c=(a,...p)=>a.filter(r=>p.some(x=>r.st.startsWith(x))).length;
+  const err={};REP.forEach(r=>{if(r.ErrorType)err[r.ErrorType]=(err[r.ErrorType]||0)+1});
+  $("ro").innerHTML=`<h2>${esc(m?mon(m).name:"All monitoring")} - report by ${g}${n?": "+esc(n):""}</h2><div style="color:var(--mute);margin-bottom:14px">${f||"start"} to ${t||"today"} - generated ${new Date().toLocaleString("en-GB")} by ${esc(S.user.name)}</div>
+  <div class="tw"><table><thead><tr><th>${g}</th><th>Total</th><th>Awaiting approval / ISD</th><th>With departments</th><th>For execution / review</th><th>Completed</th><th>Rejected</th></tr></thead><tbody>
+  ${Object.keys(grp).sort().map(k=>{const a=grp[k];return`<tr><td><b>${esc(k)}</b></td><td>${a.length}</td><td>${c(a,"Pending Branch","For ISD")}</td><td>${c(a,"Pending Note")}</td><td>${c(a,"For Execution","For Review")}</td><td>${c(a,"Completed")}</td><td>${c(a,"Rejected")}</td></tr>`}).join("")||'<tr><td colspan="7" class="empty">No records</td></tr>'}</tbody></table></div>
+  <h3 style="margin:18px 0 6px">By error type</h3><div>${Object.entries(err).map(([k,v])=>`<span class="badge" style="margin-right:6px">${esc(k)}: ${v}</span>`).join("")||"-"}</div>
+  <h3 style="margin:18px 0 6px">Details</h3><div class="tw"><table><thead><tr><th>ID</th><th>Monitoring</th><th>Date</th><th>Area</th><th>Branch</th><th>Details</th><th>Dept notes</th><th>Answered by</th><th>Answered on</th><th>ISD answer</th><th>Status</th></tr></thead><tbody>
+  ${REP.map(r=>`<tr><td>${esc(r.ID)}</td><td>${esc(r.Monitoring)}</td><td>${esc(r.Date)}</td><td>${esc(r.Area)}</td><td>${esc(r.Branch)}</td><td>${esc(summary(r))}</td><td class="nl">${esc(deptNotes(r))||"-"}</td><td>${esc(ansOf(r).by)||"-"}</td><td>${esc(ansOf(r).at)||"-"}</td><td class="nl">${esc(ansOf(r).txt)||"-"}</td><td>${esc(r.st)}</td></tr>`).join("")}</tbody></table></div>`};
+$("rp").onclick=()=>{if(!REP.length)return toast("Generate a report first");$("pgs").textContent=`@page{size:${(BR.ui||{}).paper||"A4"} landscape;margin:10mm}`;setTimeout(()=>print(),100)};
+$("rc").onclick=()=>{if(!REP.length)return toast("Generate a report first");const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  const csv=[["ID","Monitoring","Date","Area","Branch","Details","Dept notes","Answered by","Answered on","ISD answer","Status"].join(",")].concat(REP.map(r=>[r.ID,r.Monitoring,r.Date,r.Area,r.Branch,summary(r),deptNotes(r),ansOf(r).by,ansOf(r).at,ansOf(r).txt,r.st].map(q).join(","))).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="ISRF-report.csv";a.click()};
+/* ---- print one request ---- */
+async function printReq(r,incRev){
+  let fl=[];try{fl=await api("files",{id:r.ID})}catch(e){}
+  const st=status(r),N=notes(r),fw=(r.ForwardTo||"").split(",").filter(Boolean),m=mon(r.Monitoring),u=BR.ui||{},paper=u.paper||"A4",fs=fieldsOf(r.Monitoring),shf=fs.filter(f=>f.t!=="textarea"),lg=fs.filter(f=>f.t==="textarea");
+  const bx=(l,v)=>{const s=fmt(v);return`<div class="pr-sg"><small>${l}</small><div class="pr-sn">${s?esc(s.n):""}</div><div class="pr-ln"></div>${s?`<div class="pr-nm">${esc(s.n)}</div><div class="pr-dt">${s.t}</div>`:'<div class="pr-dt">Pending signature</div>'}</div>`};
+  const rm=Object.keys(N).map(k=>{const s=fmt(N[k].sig);return`<div class="pr-rh">${esc(k)}${s?" - "+esc(s.n)+", "+s.t:""}</div><div class="pr-b" style="min-height:46px">${esc(N[k].text)||"-"}</div>`}).join("")||'<div class="pr-b" style="min-height:46px">No remarks recorded.</div>';
+  const cells=[["Date",r.Date],["Branch / office",r.Branch],["Area",r.Area||"-"],...shf.map(f=>[f.l,fv(r,f)||"-"])];let trs="";
+  for(let i=0;i<cells.length;i+=2){const a=cells[i],b=cells[i+1];trs+=`<tr><td class="k">${esc(a[0])}</td><td${b?"":' colspan="3"'}>${esc(a[1])}</td>${b?`<td class="k">${esc(b[0])}</td><td>${esc(b[1])}</td>`:""}</tr>`}
+  let n=1;const sec=t=>`<div class="pr-s">${++n}. ${t}</div>`;
+  $("pgs").textContent=`@page{size:${paper};margin:12mm}.pr{min-height:${paper==="A4"?262:paper==="Letter"?248:322}mm}`;
+  $("pv").innerHTML=`<div class="pr"><div class="pr-h"><div class="pr-lg">${BR.logo?`<img src="${BR.logo}" alt="">`:esc((BR.name||"IS").slice(0,2).toUpperCase())}</div>
+   <div class="pr-co"><b>${esc(BR.name||"IS PROJECTS")}</b><span>${BR.name?"IS PROJECTS - ":""}Monitoring system</span></div>
+   <div class="pr-id"><small>Reference no.</small><b>${esc(r.ID)}</b><br><span class="pr-st">${esc(st)}</span></div></div>
+  <div class="pr-t">${esc(m.name)}</div>
+  <div class="pr-s">1. Request information</div><table class="pr-g">${trs}</table>
+  ${lg.map(f=>sec(esc(f.l))+`<div class="pr-b" style="min-height:${lg.length>1?70:120}px">${esc(fv(r,f))||"-"}</div>`).join("")}
+  ${sec("Department remarks")}${rm}
+  ${sec("Sign-offs")}<div class="pr-sgs">${bx("Requested by",r.RequestedBy)}${bx("Approved by (branch)",r.ApprovedBy)}${fw.map(d=>bx("Noted by - "+esc(d),N[d]&&N[d].sig)).join("")}${bx("Answered by (ISD)",r.AnsweredBy)}${incRev?bx("Reviewed by",r.ReviewedBy):""}${"<div class=\"pr-sg\"></div>".repeat((3-(3+fw.length+(incRev?1:0))%3)%3)}</div>
+  ${sec("Attachments")}<div class="pr-b" style="min-height:40px">${fl.length?fl.map(f=>esc(f.Name)+" ("+fsz(f.Size)+")").join("<br>"):"None"}</div>
+  <div class="pr-f"><span>${esc(u.footer||"")}</span><span>Printed ${new Date().toLocaleString("en-GB")} by ${esc(S.user.name)}</span></div></div>`;
+  document.body.classList.add("pp");setTimeout(()=>print(),150)}
+window.onafterprint=()=>document.body.classList.remove("pp");
+/* ---- home page ---- */
+async function renderHome(){
+  if(!HOME){try{HOME=await api("home")}catch(e){HOME={home:{},images:{}}}}
+  const h=HOME.home||{},im=HOME.images||{},u=S.user,rs=S.rows.map(r=>({...r,st:status(r)}));
+  let prs=[];try{const pd=await api("prfList");prs=(pd.rows||[]).map(r=>({...r,_prf:true,st:r.Status||""}))}catch(e){}
+  const need=r=>{const s=r.st,ro=u.role;return ro==="Approver"?s==="Pending Branch Approval":ro==="ISD"?(s==="For ISD Decision"||s==="For Execution"):ro==="Dept"?(s.startsWith("Pending Note")&&s.includes(u.dept)):ro==="Reviewer"?s==="For Review":false};
+  const closed=s=>s==="Completed"||s==="Rejected";
+  const activity=[...rs.map(r=>({...r,_prf:false})),...prs].sort((a,b)=>String(b.Date||"").localeCompare(String(a.Date||""))).slice(0,8);
+  const seen=Number(lsGet(seenKey())||0),today=new Date().toISOString().slice(0,10),mine=rs.filter(need).slice(0,6),safe=x=>/^https?:\/\//i.test(x||"")?x:"";
+  const side=`<div class="blk"><h3>Needs your action</h3>${mine.length?mine.map(r=>`<div class="bi" data-id="${esc(r.ID)}"><b>${esc(r.ID)}</b><span>${esc(r.Branch)} - ${esc(r.st)}</span></div>`).join(""):'<div class="bm">Nothing is waiting for you.</div>'}</div>`
+   +(u.role==="Admin"&&ACC.some(a=>a.Status==="Pending")?`<div class="blk"><h3>Account requests</h3><div class="acx" style="cursor:pointer"><b>${ACC.filter(a=>a.Status==="Pending").length} waiting for approval</b><div class="bm">Click to review</div></div></div>`:"")
+   +(INBOX.length?`<div class="blk"><h3>Follow-ups and messages</h3>${INBOX.slice(0,6).map(m=>`<div class="bi" data-id="${esc(m.RecordID)}"><b>${esc(m.RecordID)}${new Date(m.At).getTime()>seen?' <span class="badge">New</span>':""}</b><span>${esc(m.By)}${m.Kind==="followup"?" asked for a progress update":": "+esc(String(m.Text).slice(0,70))}</span></div>`).join("")}</div>`:"")
+   +(h.ads||[]).filter(a=>!a.e||a.e>=today).map(a=>`<div class="blk ad">${im["ad:"+a.id]?`<div class="adi" style="background-image:url('${im["ad:"+a.id]}')"></div>`:""}<div class="adb"><small>${esc(a.g||"Announcement")}</small><b style="display:block">${esc(a.t)}</b><p>${esc(a.x)}</p>${safe(a.u)?`<a href="${esc(safe(a.u))}" target="_blank" rel="noopener">Learn more</a>`:""}</div></div>`).join("")
+   +((h.links||[]).some(l=>safe(l.u))?`<div class="blk"><h3>Quick links</h3>${h.links.filter(l=>safe(l.u)).map(l=>`<a class="bl" href="${esc(safe(l.u))}" target="_blank" rel="noopener">${esc(l.l)}</a>`).join("")}</div>`:"")
+   +(h.help?`<div class="blk"><h3>Help desk</h3><div class="bm" style="white-space:pre-wrap">${esc(h.help)}</div></div>`:"");
+  $("v-home").innerHTML=`<div class="hgrid"><div class="hmain"><div class="hb" style="${im.hero?`background-image:url('${im.hero}')`:""}"><div class="hbo"><h1>${esc(h.title||"Welcome, "+u.name)}</h1><p>${esc(h.text||"Choose a monitoring below to view or record requests.")}</p></div></div>
+  <div class="cards">${S.cfg.Monitor.map(m=>{const a=rs.filter(r=>r.Monitoring===m.code),op=a.filter(r=>!closed(r.st)).length,dn=a.filter(r=>r.st==="Completed").length,nd=a.filter(need).length,c=(h.cards||{})[m.code]||{},ci=im["card:"+m.code];
+   return`<div class="mc" data-m="${esc(m.code)}"><div class="mi ${ci?"":"ph"}" style="${ci?`background-image:url('${ci}')`:""}">${ci?"":esc(m.code)}</div><div class="mb"><b>${esc(m.name)}</b><p>${esc(c.desc||"")}</p><div class="mm"><span>${op} open</span><span>${dn} completed</span>${nd?`<span class="mn">${nd} need your action</span>`:""}</div></div></div>`}).join("")}</div>
+  <div class="panel"><div class="bar"><h3 style="align-self:center">Latest activity</h3></div><div class="tw"><table><thead><tr><th>ID</th><th>Type</th><th>Date</th><th>Branch</th><th>Status</th></tr></thead><tbody>${activity.map(r=>`<tr class="r ${r._prf?'prf-act':''}" data-id="${esc(r.ID)}" data-prf="${r._prf?'1':'0'}"><td><b>${esc(r.ID)}</b></td><td>${r._prf?'Procurement Request':'ISRF'}</td><td>${esc(r.Date)}</td><td>${esc(r.Branch)}</td><td><span class="badge ${r._prf?prfStatusClass(r.st):cls(r.st)}">${esc(r.st)}</span></td></tr>`).join("")||'<tr><td colspan="5" class="empty">No requests yet</td></tr>'}</tbody></table></div></div></div><div class="hside">${side}</div></div>`;
+  document.querySelectorAll("#v-home .acx").forEach(e=>e.onclick=()=>view("set"));
+  document.querySelectorAll("#v-home .mc").forEach(c=>c.onclick=()=>{S.mon=c.dataset.m;view("isrf")});
+  document.querySelectorAll("#v-home tr.r").forEach(t=>t.onclick=()=>{if(t.dataset.prf==="1"){PRF.cur=t.dataset.id;view("prf")}else detail(t.dataset.id)});
+  document.querySelectorAll("#v-home .bi").forEach(t=>t.onclick=()=>detail(t.dataset.id))}
+/* ---- setup: login page ---- */
+let LG={},LIMG;
+async function fillLogin(){try{LG=await api("brand")}catch(e){LG={}}const L=LG.Login||{};LIMG=undefined;
+  $("g1").value=L.layout||"split";$("g2").value=L.title||"";$("g3").value=L.sub||"";$("g4").value=L.chips||"";$("g5").value=L.formTitle||"";$("g6").value=L.hint||"";$("g7").value=L.footer||"";$("g10").checked=L.signup!==false;
+  $("g9").innerHTML=LG.LoginImg?`<img src="${LG.LoginImg}" style="height:44px;border-radius:6px;vertical-align:middle"> <button class="btn sec sm" id="gx" type="button">Remove</button>`:"No image";
+  if($("gx"))$("gx").onclick=()=>{LIMG="";$("g9").textContent="Image will be removed when you save"}}
+$("g8").onchange=async()=>{try{LIMG=await imgOf($("g8").files[0],BAN);$("g9").innerHTML=`<img src="${LIMG}" style="height:44px;border-radius:6px">`}catch(e){toast(e.message)}};
+$("gs").onclick=async()=>{const login={layout:$("g1").value,title:$("g2").value.trim(),sub:$("g3").value.trim(),chips:$("g4").value,formTitle:$("g5").value.trim(),hint:$("g6").value.trim(),footer:$("g7").value.trim(),signup:$("g10").checked},data={login};if(LIMG!==undefined)data.img=LIMG;
+  try{await api("saveLogin",{data});toast("Login page saved");await fillLogin();applyLogin({Company:BR.name,Logo:BR.logo,Login:login,LoginImg:LG.LoginImg})}catch(e){toast(e.message)}};
+/* ---- setup: home images and monitoring fields ---- */
+const imgOf=(f,tries)=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>{for(const[w,q]of tries){const k=Math.min(1,w/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);const d=c.toDataURL("image/jpeg",q);if(d.length<=235000)return res(d)}rej(new Error("Image is too detailed. Use a smaller picture."))};im.onerror=()=>rej(new Error("Cannot read this image"));im.src=URL.createObjectURL(f)});
+const BAN=[[1400,.72],[1200,.6],[1000,.5]],CRD=[[520,.75],[420,.6],[320,.5]];
+async function fillHome(){HIMG={};try{if(!HOME)HOME=await api("home")}catch(e){HOME={home:{},images:{}}}
+  const h=HOME.home||{},im=HOME.images||{};$("h1").value=h.title||"";$("h4").value=h.text||"";
+  $("h3").innerHTML=im.hero?`<img src="${im.hero}" style="height:50px;border-radius:6px;vertical-align:middle"> <button class="btn sec sm" id="hx" type="button">Remove</button>`:"No banner image";
+  if($("hx"))$("hx").onclick=()=>{HIMG.hero="";$("h3").textContent="Banner will be removed when you save"};
+  $("hc").innerHTML=S.cfg.Monitor.map(m=>`<div class="fr" data-c="${esc(m.code)}" style="align-items:flex-start"><span style="flex:1"><b>${esc(m.code)}</b> - ${esc(m.name)}<input class="hd" placeholder="Short description for the home card" value="${esc(((h.cards||{})[m.code]||{}).desc||"")}" style="margin-top:6px"></span><span style="width:210px">${im["card:"+m.code]?`<img src="${im["card:"+m.code]}" style="height:44px;border-radius:6px;display:block;margin-bottom:4px">`:""}<input type="file" class="hf" accept="image/*"><button class="btn sec sm hr" type="button" style="margin-top:4px">Remove image</button></span></div>`).join("");
+  ADS=(h.ads||[]).map(a=>({...a}));drawAds();$("hl").value=(h.links||[]).map(l=>l.l+" | "+l.u).join("\n");$("hh").value=h.help||"";
+  $("hc").querySelectorAll(".hf").forEach(i=>i.onchange=async()=>{const c=i.closest(".fr").dataset.c;try{HIMG["card:"+c]=await imgOf(i.files[0],CRD);toast("Image ready. Click Save home page.")}catch(e){toast(e.message)}});
+  $("hc").querySelectorAll(".hr").forEach(b=>b.onclick=()=>{HIMG["card:"+b.closest(".fr").dataset.c]="";toast("Will be removed when you save")})}
+$("h2").onchange=async()=>{try{HIMG.hero=await imgOf($("h2").files[0],BAN);toast("Banner ready. Click Save home page.")}catch(e){toast(e.message)}};
+let ADS=[];
+function syncAds(){$("ha").querySelectorAll(".ad2").forEach(r=>{const a=ADS.find(x=>x.id===r.dataset.id);if(a){a.t=r.querySelector(".at").value;a.x=r.querySelector(".ax").value;a.u=r.querySelector(".au").value.trim();a.e=r.querySelector(".ae").value;a.g=r.querySelector(".ag").value}})}
+function drawAds(){const im=(HOME&&HOME.images)||{};$("ha").innerHTML=ADS.map(a=>`<div class="fr ad2" data-id="${esc(a.id)}" style="display:block"><div class="g2"><div><label>Title</label><input class="at" value="${esc(a.t)}"></div><div><label>Label</label><input class="ag" value="${esc(a.g||"Announcement")}"></div>
+  <div style="grid-column:1/-1"><label>Text</label><input class="ax" value="${esc(a.x)}"></div><div><label>Link (optional, https://...)</label><input class="au" value="${esc(a.u)}"></div><div><label>Show until (optional)</label><input class="ae" type="date" value="${esc(a.e)}"></div>
+  <div><label>Image</label>${(HIMG["ad:"+a.id]||im["ad:"+a.id])&&HIMG["ad:"+a.id]!==""?`<img src="${HIMG["ad:"+a.id]||im["ad:"+a.id]}" style="height:40px;border-radius:6px;display:block;margin-bottom:4px">`:""}<input type="file" class="af" accept="image/*"></div><div style="align-self:end"><button class="btn red sm ar" type="button">Remove advertisement</button></div></div></div>`).join("")||'<div style="color:var(--mute)">No advertisements yet.</div>';
+  $("ha").querySelectorAll(".af").forEach(i=>i.onchange=async()=>{const id=i.closest(".ad2").dataset.id;try{HIMG["ad:"+id]=await imgOf(i.files[0],CRD);syncAds();drawAds();toast("Image ready. Click Save home page.")}catch(e){toast(e.message)}});
+  $("ha").querySelectorAll(".ar").forEach(b=>b.onclick=()=>{syncAds();const id=b.closest(".ad2").dataset.id;ADS=ADS.filter(a=>a.id!==id);HIMG["ad:"+id]="";drawAds()})}
+$("hadd").onclick=()=>{syncAds();if(ADS.length>=6)return toast("Up to 6 advertisements");ADS.push({id:Date.now().toString(36),t:"",x:"",u:"",e:"",g:"Announcement"});drawAds()};
+$("hs").onclick=async()=>{syncAds();const cards={};$("hc").querySelectorAll(".fr").forEach(r=>cards[r.dataset.c]={desc:r.querySelector(".hd").value.trim()});
+  try{await api("saveHome",{data:{home:{title:$("h1").value.trim(),text:$("h4").value.trim(),cards,ads:ADS.filter(a=>a.t.trim()),links:lines($("hl").value).map(l=>{const p=l.split("|").map(x=>x.trim());return{l:p[0],u:p[1]||""}}).filter(l=>l.l&&l.u),help:$("hh").value.trim()},images:HIMG}});HOME=null;toast("Home page saved");fillHome()}catch(e){toast(e.message)}};
+const FT=["text","textarea","number","date","select"];
+const fieldsToText=a=>a.map(f=>[f.l,f.t,...(f.t==="select"?[(f.o||[]).join(", ")]:[]),...(f.r?["*"]:[])].join(" | ")).join("\n");
+const CM={"error type":"ErrorType","documents damaged":"DocsDamage","problem details":"ProblemDetails"};
+const textToFields=t=>lines(t).map(l=>{const p=l.split("|").map(x=>x.trim()),ty=FT.includes((p[1]||"").toLowerCase())?p[1].toLowerCase():"text",o=ty==="select"?(p[2]&&p[2]!=="*"?p[2]:"").split(",").map(x=>x.trim()).filter(Boolean):[],c=CM[(p[0]||"").toLowerCase()],f={l:p[0],t:ty,o,r:p.includes("*")};if(c){f.c=c;if(c==="ErrorType"&&ty==="select"&&!o.length)f.src="err"}return f}).filter(f=>f.l);
+const readFields=()=>{const o={};document.querySelectorAll(".mfx").forEach(t=>{const a=textToFields(t.value);if(a.length)o[t.dataset.c]=a});return o};
+function fillFields(){$("mf").innerHTML=S.cfg.Monitor.map(m=>`<div><label>${esc(m.code)} - ${esc(m.name)}</label><textarea class="mfx" data-c="${esc(m.code)}" rows="6" placeholder="Label | type | options | *">${esc(fieldsToText((S.cfg.Fields||{})[m.code]||(m.code==="ISRF"?DEF:[])))}</textarea></div>`).join("")}
+/* ---- setup ---- */
+async function loadPrfSetup(){try{const d=await api("prfList");const g=d.groups||{},f=d.flow||{};PRF.flow=f||{name:"PRF",steps:[],acct:"Accounting"};prfApplyName();if($("prfName"))$("prfName").value=f.name||"PRF";const map={"SYSTEM UNIT":"prfg_system","CCTV":"prfg_cctv","PRINTER DOT MATRIX":"prfg_dot","PRINTER INKJET":"prfg_ink","UPS":"prfg_ups","MONITOR":"prfg_monitor","SWITCH HUB":"prfg_switch","LAPTOP":"prfg_laptop","OTHER":"prfg_other"};Object.keys(map).forEach(k=>{if($(map[k]))$(map[k]).value=(g[k]||[]).join("\n")});const find=k=>(f.steps||[]).find(x=>x.k===k);$("prfam").value=(find("AM")?.u||[]).join(", ");$("prfism").value=(find("ISM")?.u||[]).join(", ");$("prfcoo").value=(find("COO")?.u||[]).join(", ");$("prfAcctDept").value=f.acct||"Accounting";$("prfdiagusers").value=(f.diag||[]).join(", ");$("prfawardusers").value=(f.award||[]).join(", ")}catch(e){toast(e.message)}}
+$("prfgsave").onclick=async()=>{const lines=v=>v.split("\n").map(x=>x.trim()).filter(Boolean),g={"SYSTEM UNIT":lines($("prfg_system").value),"CCTV":lines($("prfg_cctv").value),"PRINTER DOT MATRIX":lines($("prfg_dot").value),"PRINTER INKJET":lines($("prfg_ink").value),"UPS":lines($("prfg_ups").value),"MONITOR":lines($("prfg_monitor").value),"SWITCH HUB":lines($("prfg_switch").value),"LAPTOP":lines($("prfg_laptop").value),"OTHER":lines($("prfg_other").value)},u=x=>lines(x.replace(/,/g,"\n")),f={name:$("prfName").value.trim()||"PRF",steps:[{k:"AM",l:"Area Manager",u:u($("prfam").value)},{k:"ISM",l:"Information System Manager",u:u($("prfism").value)},{k:"COO",l:"Chief Operating Officer",u:u($("prfcoo").value)}],acct:$("prfAcctDept").value.trim()||"Accounting",diag:u($("prfdiagusers").value),award:u($("prfawardusers").value)};try{await api("prfSaveCfg",{data:{groups:g,flow:f}});PRF.groups=g;PRF.flow=f;prfApplyName();toast(prfName()+" setup saved")}catch(e){toast(e.message)}};
+async function loadSet(){const c=S.cfg;fillBrand();fillFields();fillHome();fillLogin();fillAccounts();loadPrfSetup();$("sb").value=c.Branch.map(b=>b.area+" | "+b.name).join("\n");$("se").value=c.ErrorType.map(e=>e.mon?e.mon+" | "+e.name:e.name).join("\n");$("sm").value=c.Monitor.map(m=>m.code+" | "+m.name).join("\n");$("sd").value=c.Dept.join("\n");
+  $("u6").innerHTML='<option value="*">All branches and offices</option>'+areas().map(a=>`<option value="@${esc(a)}">Whole area: ${esc(a)}</option>`).join("")+S.cfg.Branch.map(b=>`<option value="${esc(b.name)}">${esc(b.name)}</option>`).join("");$("u7").innerHTML='<option value="">(none)</option>'+opts(c.Dept);
+  try{const u=await api("listUsers");S.users=u;$("ut").innerHTML=u.map((x,i)=>`<tr class="r" data-i="${i}"><td>${esc(x.username)}</td><td>${esc(x.name)}</td><td>${x.role}</td><td>${esc(x.branch)}</td><td>${esc(x.dept)}</td><td>${esc(x.email)}<br>${esc(x.phone)}</td><td>${x.active?"Yes":"No"}</td></tr>`).join("")}catch(e){toast(e.message)}
+  document.querySelectorAll("#ut tr.r").forEach(t=>t.onclick=()=>{const x=S.users[t.dataset.i],tk=String(x.branch||"").split(",").map(y=>y.trim());
+    $("u1").value=x.username;$("u2").value=x.name;$("u3").value=x.role;$("u5").checked=x.active;$("u7").value=x.dept||"";$("u8").value=x.email||"";$("u9").value=x.phone||"";$("u4").value="";
+    [...$("u6").options].forEach(o=>o.selected=tk.includes(o.value));$("uf").scrollIntoView({behavior:"smooth"})});
+  try{const g=await api("storage"),s=g.set,pc=Math.min(100,Math.round(g.used/1048576/s.CapMB*100));
+   $("sti").innerHTML=`<div class="meter"><i style="width:${pc}%"></i></div><div style="margin-top:6px"><b>${fsz(g.used)}</b> used of ${s.CapMB} MB cap (${pc}%) - ${g.count} files - ${g.mailQuota} emails left today${s.RetainDays?` - ${g.eligible} eligible for cleanup`:""}</div>
+   <div style="color:var(--mute);font-size:12px;margin-top:6px">Your free Google account has 15 GB shared by Drive, Gmail and Photos. Keep the cap well below that. Photos are shrunk before upload, and old completed requests can be cleaned automatically.</div>`;
+   $("s1").value=s.MaxFileMB;$("s2").value=s.MaxFiles;$("s3").value=s.CapMB;$("s4").value=s.RetainDays}catch(e){toast(e.message)}}
+$("ss").onclick=async()=>{try{await api("saveSettings",{data:{MaxFileMB:$("s1").value,MaxFiles:$("s2").value,CapMB:$("s3").value,RetainDays:$("s4").value}});toast("Storage settings saved");load();loadSet()}catch(e){toast(e.message)}};
+$("sx").onclick=async()=>{if(!confirm("Move attachments of old completed requests to the Drive trash?"))return;try{const d=await api("cleanup");toast("Removed "+d.n+" files ("+fsz(d.bytes)+")");loadSet()}catch(e){toast(e.message)}};
+let LOGO;
+const logoOf=f=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const k=Math.min(1,240/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);let d=c.toDataURL("image/png");if(d.length>45000)d=c.toDataURL("image/jpeg",.8);d.length>45000?rej(new Error("Logo is too detailed. Use a simpler or smaller image.")):res(d)};im.onerror=()=>rej(new Error("Cannot read this image"));im.src=URL.createObjectURL(f)});
+function fillBrand(){const b=S.cfg,u=b.UI||{};$("b1").value=b.Company||"";$("b3").value=u.accent||"#0f766e";$("b4").value=u.sbbg||(u.sidebar==="light"?"#ffffff":"#10243a");$("b10").value=u.pagebg||"#eef2f7";$("b11").value=u.ink||"#10243a";$("b12").value=u.hero||"#0b1d31";$("b13").value=u.prc||"#10243a";$("b5").value=u.density||"comfortable";$("b14").value=u.nav||"side";$("b6").value=u.corners||"rounded";$("b7").value=u.paper||"A4";$("b8").value=u.footer||"";LOGO=undefined;
+  $("b9").innerHTML=b.Logo?`<img src="${b.Logo}" style="height:40px">`:"No logo";$("m3").value=b.SmsOn?(b.SmsProvider||"semaphore"):"android";gp();$("mst").textContent=b.SmsOn?"SMS gateway is connected.":"SMS gateway not connected. Users can still open SMS in their phone's Messages app."}
+const PZ={"Ocean":["#0f766e","#10243a","#eef2f7","#10243a","#0b1d31","#10243a"],"Forest":["#15803d","#14352a","#eef4ef","#14352a","#0f2a20","#14352a"],"Burgundy":["#9f1239","#3b0f1e","#f7eef0","#3b0f1e","#2d0b17","#3b0f1e"],"Navy":["#1d4ed8","#0f1f4a","#eef2fb","#0f1f4a","#0b1638","#0f1f4a"],"Slate":["#475569","#1e293b","#f1f5f9","#1e293b","#0f172a","#1e293b"],"Light":["#0f766e","#ffffff","#f3f6f9","#10243a","#0b1d31","#10243a"]};
+$("pz").innerHTML=Object.keys(PZ).map(k=>`<button class="btn sec sm" type="button" data-p="${k}"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${PZ[k][0]};margin-right:6px"></span>${k}</button>`).join("");
+$("pz").onclick=e=>{const k=e.target.closest("[data-p]");if(!k)return;PZ[k.dataset.p].forEach((v,i)=>$(["b3","b4","b10","b11","b12","b13"][i]).value=v)};
+$("b2").onchange=async()=>{const f=$("b2").files[0];if(!f)return;try{LOGO=await logoOf(f);$("b9").innerHTML=`<img src="${LOGO}" style="height:40px">`}catch(e){toast(e.message)}};
+$("bx").onclick=()=>{LOGO="";$("b9").textContent="No logo"};
+$("bs2").onclick=async()=>{const d={company:$("b1").value.trim(),ui:{accent:$("b3").value,sbbg:$("b4").value,pagebg:$("b10").value,ink:$("b11").value,hero:$("b12").value,prc:$("b13").value,density:$("b5").value,corners:$("b6").value,nav:$("b14").value,paper:$("b7").value,footer:$("b8").value.trim()}};if(LOGO!==undefined)d.logo=LOGO;
+  try{await api("saveBrand",{data:d});toast("Appearance saved");await load();fillBrand()}catch(e){toast(e.message)}};
+$("ms").onclick=async()=>{try{await api("saveSms",{provider:$("m3").value,key:$("m1").value,sender:$("m2").value,user:$("m4").value,pass:$("m5").value});$("m1").value=$("m4").value=$("m5").value="";toast("Messaging saved");await load();fillBrand()}catch(e){toast(e.message)}};
+$("mx").onclick=async()=>{try{await api("saveSms",{clear:true});toast("Gateway disconnected");await load();fillBrand()}catch(e){toast(e.message)}};
+const lines=v=>v.split("\n").map(s=>s.trim()).filter(Boolean);
+$("sc").onclick=async()=>{const Branch=lines($("sb").value).map(l=>{const p=l.split("|").map(x=>x.trim());return p.length>1?{area:p[0],name:p[1]}:{area:"",name:p[0]}});
+  try{await api("saveConfig",{data:{Branch,ErrorType:lines($("se").value).map(l=>{const p=l.split("|").map(x=>x.trim());return p.length>1?{mon:p[0].toUpperCase(),name:p[1]}:{mon:"",name:p[0]}}),Dept:lines($("sd").value),Fields:readFields(),Monitor:lines($("sm").value).map(l=>{const p=l.split("|").map(x=>x.trim()),code=p[0].toUpperCase().replace(/[^A-Z0-9]/g,"");return{code,name:p[1]||code}}).filter(m=>m.code)}});toast("Lists saved");load()}catch(e){toast(e.message)}};
+$("us").onclick=async()=>{const d={username:$("u1").value.trim(),name:$("u2").value.trim(),role:$("u3").value,password:$("u4").value,active:$("u5").checked,branch:[...$("u6").selectedOptions].map(o=>o.value).join(","),dept:$("u7").value,email:$("u8").value.trim(),phone:$("u9").value.trim()};
+  if(!d.username||!d.name)return toast("Username and full name are required");if(!d.email||!d.phone)return toast("Email and contact number are required so the approved account can be sent to the user");
+  try{await api("saveUser",{data:d});toast("User saved");$("u4").value="";loadSet()}catch(e){toast(e.message)}};
+(async()=>{const t=getTok();if(!API_URL||!t)return;$("login").style.visibility="hidden";S.token=t;
+  try{const d=await api("me");S.user=d.user;start();$("login").style.visibility=""}catch(e){S.token=null;$("login").style.visibility=""}})();
+
+/* ========================= PRF / PROCUREMENT MODULE ========================= */
+const PRF={
+  rows:[], groups:{}, flow:{name:"PRF",steps:[],acct:"Accounting"}, branches:[], users:[], cur:null
+};
+
+const prfNormItem=x=>({
+  n:String(x?.n??x?.name??x?.description??"").trim(),
+  q:Number(x?.q??x?.qty??0),
+  p:Number(x?.p??x?.price??0),
+  c:Number(x?.c??x?.charge??0),
+  unit:String(x?.unit??"").trim(),
+  group:String(x?.group??"").trim(),
+  remarks:String(x?.remarks??"").trim()
+});
+const prfItems=d=>(Array.isArray(d?.items)?d.items:[]).map(prfNormItem);
+const money=n=>Number(n||0).toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2});
+const prfTotal=d=>prfItems(d).reduce((s,x)=>s+(Number(x.p)||0),0);
+const prfDate=()=>new Date().toISOString().slice(0,10);
+const prfStatusClass=s=>String(s||"").replace(/[^A-Za-z0-9_-]/g,"");
+const prfUserName=v=>{const z=fmt(v);return z?.n||""};
+const prfName=()=>String(PRF.flow?.name||"PRF").trim()||"PRF";
+function prfApplyName(){
+  const n=prfName();
+  if($("navprf"))$("navprf").textContent="Procurement ("+n+")";
+  if($("prfhelp"))$("prfhelp").textContent=n+" User Guide / Workflow";
+  document.title=document.title.replace(/PRF/g,n);
+  const h=$("prfName")?.closest(".panel")?.querySelector("h3");
+  if(h)h.textContent="Procurement Request ("+n+") setup";
+  const help=document.querySelector('#prfhelp');
+  if($("prfq"))$("prfq").placeholder="Search "+n+" no., branch, reason, item";
+  if($("prfnew"))$("prfnew").textContent="New "+n;
+  const th=document.querySelector('#prftb')?.closest('table')?.querySelector('thead th');
+  if(th)th.textContent=n+" No.";
+  if($("prfgsave"))$("prfgsave").textContent="Save "+n+" setup";
+  document.querySelectorAll("#prfstats .prf-card span")[0]?.replaceChildren(document.createTextNode("Total "+n+"s"));
+}
+
+function prfCanCreate(){
+  const u=S.user||{};
+  const roles=["Admin","ISD","User","Approver","Reviewer"];
+  if(!roles.includes(u.role)) return false;
+  const assigned=String(u.branch||"").split(",").map(x=>x.trim()).filter(Boolean);
+  return u.role==="Admin" || assigned.length>0;
+}
+
+async function prfLoad(){
+  try{
+    const d=await api("prfList");
+    PRF.rows=Array.isArray(d.rows)?d.rows:[];
+    PRF.groups=d.groups||{};
+    PRF.flow=d.flow||{name:"PRF",steps:[],acct:"Accounting"};
+    prfApplyName();
+    PRF.branches=Array.isArray(d.branches)?d.branches:[];
+    PRF.users=Array.isArray(d.users)?d.users:[];
+    if(d.company&&!BR.name) applyBrand({Company:d.company,Logo:BR.logo,UI:BR.ui});
+    prfDraw();
+    if(PRF.cur){
+      const r=PRF.rows.find(x=>x.ID===PRF.cur);
+      if(r) prfDetail(r);
+    }
+  }catch(e){toast("PRF: "+e.message)}
+}
+
+function prfAllowedBranches(){
+  const u=S.user||{};
+  if(u.role==="Admin") return PRF.branches.map(x=>x.name);
+  const a=String(u.branch||"").split(",").map(x=>x.trim()).filter(Boolean);
+  return PRF.branches.filter(b=>a.includes(b.name)||a.includes("*")||a.includes("@"+b.area)).map(b=>b.name);
+}
+
+function prfDraw(){
+  const q=($("prfq")?.value||"").toLowerCase().trim();
+  const fs=$("prffs")?.value||"";
+  const rows=PRF.rows.filter(r=>{
+    const blob=JSON.stringify([r.ID,r.Branch,r.Area,r.Reason,r.Data?.items]).toLowerCase();
+    const noAcctVerifier=r.Status==="Pending for Accounting" && !r.Data?.sign?.verifier;
+    const statusMatch=!fs || r.Status===fs || (fs==="__NO_ACCT_VERIFIER__" && noAcctVerifier);
+    return (!q||blob.includes(q))&&statusMatch;
+  }).slice().reverse();
+
+  const statuses=[...new Set(PRF.rows.map(r=>r.Status).filter(Boolean))];
+  const old=fs;
+  $("prffs").innerHTML='<option value="">All statuses</option>'+statuses.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("")+
+    '<option value="__NO_ACCT_VERIFIER__">Pending for Accounting — Not Yet Verified</option>';
+  $("prffs").value=(statuses.includes(old)||old==="__NO_ACCT_VERIFIER__")?old:"";
+
+  const counts={
+    total:PRF.rows.length,
+    pending:PRF.rows.filter(r=>/Pending Branch Approval/i.test(r.Status||"")).length,
+    isd:PRF.rows.filter(r=>/ISD/i.test(r.Status||"")).length,
+    acct:PRF.rows.filter(r=>String(r.Status||"")==='Pending for Accounting').length,
+    done:PRF.rows.filter(r=>r.Status==="Completed").length
+  };
+  $("prfstats").innerHTML=
+    `<div class="prf-card"><b>${counts.total}</b><span>Total ${esc(prfName())}s</span></div>`+
+    `<div class="prf-card"><b>${counts.pending}</b><span>Pending Branch Approval</span></div>`+
+    `<div class="prf-card"><b>${counts.isd}</b><span>ISD Processing</span></div>`+
+    `<div class="prf-card"><b>${counts.acct}</b><span>Pending for Accounting</span></div>`+
+    `<div class="prf-card"><b>${counts.done}</b><span>Completed</span></div>`;
+
+  $("prftb").innerHTML=rows.map(r=>{
+    const items=prfItems(r.Data);
+    return `<tr class="r" data-prfid="${esc(r.ID)}">
+      <td><b>${esc(r.ID)}</b></td>
+      <td>${esc(r.Date||"")}</td>
+      <td>${esc(r.Branch||"")}</td>
+      <td>${esc(prfUserName(r.Data?.sign?.requested))}</td>
+      <td>${items.length}</td>
+      <td>${money(prfTotal(r.Data))}</td>
+      <td><span class="badge ${prfStatusClass(r.Status)}">${esc(r.Status||"")}</span></td>
+    </tr>`;
+  }).join("");
+  $("prfempty").classList.toggle("hide",rows.length>0);
+  document.querySelectorAll("#prftb tr[data-prfid]").forEach(tr=>{
+    tr.onclick=()=>{PRF.cur=tr.dataset.prfid;prfDetail(PRF.rows.find(x=>x.ID===PRF.cur))}
+  });
+}
+
+function prfOpen(h){
+  $("mo").innerHTML=`<div class="ov"><div class="modal">${h}</div></div>`;
+  $("mo").querySelector(".ov").onmousedown=e=>{
+    if(e.target.classList.contains("ov")) $("mo").innerHTML="";
+  };
+}
+function prfClose(){$("mo").innerHTML=""}
+
+function prfHelpDlg(){
+  prfOpen(`<div class="prf-help"><div class="fr"><div><h2>${esc(prfName())} User Guide / Workflow</h2><div class="prf-muted">Use this guide if you are unsure what to do next. Each stage shows who is responsible and which button to use.</div></div><button class="btn sec sm" id="prfhelpclose">Close</button></div>
+    <div class="prf-flowchart">
+      <div class="pf-step pf-blue"><b>1. CREATE PRF</b><span>Requester</span><small>Enter reason, requested items, quantity and projected amount. Submit the PRF.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-yellow"><b>2. DIAGNOSTIC / ASSESSMENT</b><span>ISD Staff</span><small>Prepare the diagnostic findings and save the assessment.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-red"><b>3. DIAGNOSTIC APPROVAL</b><span>ISD + Authorized Approver</span><small><b>Prepared / Assessed by</b> = ISD staff. The Branch Manager approval from Step 1 is the attestation. Then click <b>Approve Diagnostic</b>.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-green"><b>4. CANVASS</b><span>ISD / Authorized User</span><small>Add quotations, stores, prices and attachments. Select the best quotation.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-red"><b>5. AWARD & APPROVAL</b><span>Authorized User</span><small>Select award, then <b>Awarded by</b> and <b>Approve Award</b> using username/password.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-blue"><b>6. ACCOUNTING</b><span>Accounting</span><small>Review account charges, add remarks and sign as verifier.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-purple"><b>7. APPROVAL FLOW</b><span>Configured Approvers</span><small>Follow the configured AM / ISM / COO or other approval sequence.</small></div>
+    </div>
+    <div class="prf-helpgrid"><div><h3>Credentialed buttons</h3><ul><li><b>Prepared / Assessed by</b> — automatically records the ISD user who saves the diagnostic.</li><li><b>Approve Diagnostic</b> — authorized diagnostic approver credentials.</li><li><b>Awarded by</b> — authorized awarder credentials.</li><li><b>Approve Award</b> — authorized approver credentials.</li></ul></div><div><h3>Printing</h3><ul><li><b>Print ${esc(prfName())}</b> — complete request and workflow.</li><li><b>Print Diagnostic</b> — diagnostic findings and sign-offs.</li><li><b>Print Canvass</b> — quotations, award store, awarded by and approved by.</li><li>Print layouts are designed for one A4 page and adapt to content size.</li></ul></div></div>
+    <div class="prf-alert"><b>Need help?</b> Follow the numbered steps from left to right. Do not skip a required sign-off; the system will tell you which signature is still pending.</div>
+  </div>`);
+  $("prfhelpclose").onclick=prfClose;
+} 
+
+function isrfHelpDlg(){
+  const im=mon("ISRF"),name=im.name||"Information System Request Form";
+  prfOpen(`<div class="prf-help"><div class="fr"><div><h2>${esc(name)} User Guide / Workflow</h2><div class="prf-muted">Use this guide if you are unsure what to do next. Follow the request from creation through branch approval, ISD action, department notes and final review.</div></div><button class="btn sec sm" id="isrfhelpclose">Close</button></div>
+    <div class="prf-flowchart">
+      <div class="pf-step pf-blue"><b>1. CREATE REQUEST</b><span>Requester / User</span><small>Choose the ISRF monitoring type, complete the required fields, select the area and branch, add details and attachments if needed, then submit.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-red"><b>2. BRANCH APPROVAL</b><span>Branch Manager / Approver</span><small>Review the request details and attachments. Click <b>Approve (branch)</b> to continue or <b>Reject</b> when the request should not proceed.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-yellow"><b>3. ISD DECISION</b><span>ISD</span><small>After branch approval, ISD reviews the request. Choose <b>For execution</b> or <b>Forward to departments for notes</b>, then save the decision.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-green"><b>4. DEPARTMENT NOTES</b><span>Assigned Department</span><small>If forwarded, each selected department enters its note and clicks <b>Sign and add note</b>. The request waits until all required notes are completed.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-yellow"><b>5. ISD EXECUTION / ANSWER</b><span>ISD</span><small>When all required notes are complete, ISD records the action or answer and clicks <b>Mark executed and sign</b>.</small></div><div class="pf-arrow">→</div>
+      <div class="pf-step pf-purple"><b>6. REVIEW & COMPLETE</b><span>Reviewer</span><small>The request moves to <b>For Review</b>. The Reviewer checks the completed response and clicks <b>Review and complete</b>.</small></div>
+    </div>
+    <div class="prf-helpgrid"><div><h3>What each status means</h3><ul><li><b>Pending Branch Approval</b> — waiting for branch approval.</li><li><b>Pending for Accounting</b> — Accounting needs to review the requested items, update account charges if needed, and sign as verifier.</li><li><b>For ISD Decision</b> — branch approved; ISD must decide what to do.</li><li><b>Pending Note</b> — one or more selected departments still need to sign a note.</li><li><b>For Execution</b> — ISD can execute and provide the answer.</li><li><b>For Review</b> — the answer is ready for the Reviewer.</li><li><b>Completed</b> — the request has been reviewed and completed.</li><li><b>Rejected</b> — the request was rejected.</li></ul></div><div><h3>Helpful actions</h3><ul><li><b>Edit</b> — ISD can update an open request when permitted.</li><li><b>Attachments</b> — upload PDF, JPG or PNG files allowed by the system settings.</li><li><b>Print</b> — print the request and its recorded sign-offs.</li><li><b>Send</b> — send the request by email/SMS when configured.</li><li><b>Ask for progress update</b> — send a follow-up message to the request.</li><li><b>Reject</b> — use only when the request should not proceed.</li></ul></div></div>
+    <div class="prf-alert"><b>Simple rule:</b> Requester submits → Branch approves → ISD decides → Departments provide notes when requested → ISD executes/answers → Reviewer completes. The status shown on each request tells you the next step.</div>
+  </div>`);
+  $("isrfhelpclose").onclick=prfClose;
+}
+
+function prfCredentialDlg(r,type,title,description){
+  const labels={
+    assess:'Prepared / Assessed by',
+    diagApprove:'Approve Diagnostic',
+    awardSign:'Awarded By',
+    awardApprove:'Approve Award'
+  };
+  const actionTitle=title||labels[type]||'Confirm Action';
+  prfOpen(`<h2>${esc(actionTitle)}</h2><div class="prf-muted">${esc(description||'Enter your own IS Projects username and password to record this action. Your password is verified securely and is not stored in the PRF.')}</div><label>Username</label><input id="prfcreduser" autocomplete="username"><label>Password</label><input id="prfcredpass" type="password" autocomplete="current-password"><div class="err" id="prfcrederr"></div><div class="acts"><button class="btn sec" id="prfcredcancel">Cancel</button><button class="btn" id="prfcredsave">Confirm</button></div>`);
+  $("prfcredcancel").onclick=prfClose;
+  $("prfcredpass").onkeydown=e=>{if(e.key==='Enter')$("prfcredsave").click()};
+  $("prfcredsave").onclick=async()=>{
+    const username=$("prfcreduser").value.trim(),password=$("prfcredpass").value;
+    if(!username||!password){$("prfcrederr").textContent='Username and password are required.';return}
+    $("prfcredsave").disabled=true;$("prfcrederr").textContent='';
+    try{
+      await api('prfAct',{id:r.ID,type,data:{username,password}});
+      prfClose();
+      toast(actionTitle+' recorded.');
+      await prfLoad();
+      const rr=PRF.rows.find(x=>x.ID===r.ID); if(rr)prfDetail(rr);
+    }catch(e){$("prfcrederr").textContent=e.message||'Unable to verify credentials.';$("prfcredsave").disabled=false}
+  };
+  $("prfcreduser").focus();
+}
+
+function prfCreateDlg(r=null){
+  const edit=!!r;
+  const allowed=edit?PRF.branches.map(b=>b.name):prfAllowedBranches();
+  if(!allowed.length)return toast("No branch is assigned to your account.");
+
+  const data=r?.Data||{};
+  const rows=edit?prfItems(data):[{n:"",q:1,p:0,c:0,unit:"",group:"",remarks:""}];
+
+  prfOpen(`
+    <h2>${edit?"Edit "+esc(r.ID):"New "+esc(prfName())}</h2>
+    <div class="prf-muted">${edit?"Update the request before it proceeds in the approval workflow.":"The request will first wait for Branch Manager approval."}</div>
+    <div class="g2">
+      <div><label>Date of request *</label><input type="date" id="prfdate" value="${esc(r?.Date||prfDate())}"></div>
+      <div><label>Branch / office *</label><select id="prfbranch">${allowed.map(b=>`<option>${esc(b)}</option>`).join("")}</select></div>
+      <div style="grid-column:1/-1"><label>Reason of request *</label><textarea id="prfreason" rows="3">${esc(r?.Reason||"")}</textarea></div>
+    </div>
+    <label>Items requested *</label>
+    <div class="prf-muted">Each row requires an item description and quantity. Estimated amount is optional.</div>
+    <div id="prfitems"></div>
+    <button class="btn sec sm" id="prfadditem" type="button">+ Add item</button>
+    <div class="prf-total"><span>Total projected:</span><b id="prftotal">0.00</b></div>
+    <div class="acts">
+      <button class="btn sec" id="prfcancel" type="button">Cancel</button>
+      <button class="btn" id="prfsave" type="button">${edit?"Save changes":"Submit "+esc(prfName())}</button>
+    </div>
+  `);
+
+  $("prfbranch").value=r?.Branch||allowed[0];
+
+  const drawItems=()=>{
+    $("prfitems").innerHTML=rows.map((x,i)=>`
+      <div class="prf-item" data-i="${i}">
+        <div class="prf-item-grid">
+          <div><label>Item description *</label><input class="prf-n" value="${esc(x.n)}" placeholder="e.g. Epson L5290 Ink, 1TB SSD, Office Chair"></div>
+          <div><label>Qty *</label><input class="prf-q" type="number" min="1" step="any" value="${esc(x.q||1)}"></div>
+          <div><label>Estimated amount</label><input class="prf-p" type="number" min="0" step="0.01" value="${esc(x.p||0)}"></div>
+          <div><label>Unit</label><input class="prf-u" value="${esc(x.unit)}" placeholder="pcs, set, box"></div>
+        </div>
+        <div class="g2">
+          <div><label>Category / group</label><input class="prf-g" value="${esc(x.group)}" placeholder="Optional"></div>
+          <div><label>Remarks</label><input class="prf-r" value="${esc(x.remarks)}" placeholder="Optional"></div>
+        </div>
+        <button class="btn sec sm prfremove" type="button" ${rows.length===1?"disabled":""}>Remove item</button>
+      </div>`).join("");
+
+    const recalc=()=>{
+      let total=0;
+      document.querySelectorAll(".prf-item").forEach(el=>{
+        total+=(Number(el.querySelector(".prf-p").value)||0);
+      });
+      $("prftotal").textContent=money(total);
+    };
+    document.querySelectorAll(".prf-p").forEach(x=>x.oninput=recalc);
+    document.querySelectorAll(".prfremove").forEach((b,i)=>b.onclick=()=>{
+      rows.splice(i,1); if(!rows.length)rows.push({n:"",q:1,p:0,c:0,unit:"",group:"",remarks:""}); drawItems();
+    });
+    recalc();
+  };
+  drawItems();
+
+  $("prfadditem").onclick=()=>{rows.push({n:"",q:1,p:0,c:0,unit:"",group:"",remarks:""});drawItems()};
+  $("prfcancel").onclick=prfClose;
+
+  $("prfsave").onclick=async()=>{
+    const items=[...document.querySelectorAll(".prf-item")].map(el=>{
+      const n=el.querySelector(".prf-n").value.trim();
+      const q=Number(el.querySelector(".prf-q").value);
+      const p=Number(el.querySelector(".prf-p").value||0);
+      const unit=el.querySelector(".prf-u").value.trim();
+      const group=el.querySelector(".prf-g").value.trim();
+      const remarks=el.querySelector(".prf-r").value.trim();
+      return {n,name:n,description:n,q,qty:q,p,price:p,c:0,unit,group,remarks};
+    });
+    if(!items.length||items.some(x=>!x.n))
+      return toast("Every row needs an item description.");
+    if(items.some(x=>!(x.q>0)))
+      return toast("Every row needs a valid quantity.");
+    const date=$("prfdate").value,branch=$("prfbranch").value,reason=$("prfreason").value.trim();
+    if(!date||!branch)return toast("Date and branch are required.");
+    if(!reason)return toast("Reason of request is required.");
+
+    const data={date,branch,reason,items};
+    $("prfsave").disabled=true;
+    try{
+      if(edit) await api("prfEdit",{id:r.ID,data});
+      else PRF.cur=await api("prfCreate",{data});
+      prfClose();
+      toast(edit?(prfName()+" updated."):(prfName()+" submitted. It is now waiting for Branch Manager approval."));
+      await prfLoad();
+      if(PRF.cur){const rr=PRF.rows.find(x=>x.ID===PRF.cur);if(rr)prfDetail(rr)}
+    }catch(e){toast(e.message);$("prfsave").disabled=false}
+  };
+}
+
+function prfStep(label,sig){
+  const f=fmt(sig);
+  return `<div class="step ${f?"done":""}"><small>${esc(label)}</small>${f?`<div class="sig">${esc(f.n)}</div><small>${esc(f.t)}</small>`:"<div class=\"prf-muted\">Pending</div>"}</div>`;
+}
+
+async function prfDetail(r){
+  if(!r)return; PRF.cur=r.ID;
+  const d=r.Data||{},items=prfItems(d),u=S.user||{},closed=["Completed","Rejected"].includes(r.Status);
+  const adm=u.role==="Admin",isd=adm||u.role==="ISD",acct=adm||(String(u.role||"").toLowerCase()==="dept"&&String(u.dept||"").trim().toLowerCase()===String((PRF.flow&&PRF.flow.acct)||"Accounting").trim().toLowerCase());
+  const assigned=String(u.branch||"").split(",").map(x=>x.trim());
+  const branchManager=(u.role==="Approver"||adm)&&(adm||assigned.includes("*")||assigned.includes(r.Branch)||assigned.includes("@"+r.Area));
+  const owner=u.role==="User"&&r.CreatedBy===u.username;
+  const canEdit=!closed&&(!d.sign?.purchaser&&!d.sign?.checker)&&((adm||isd)||(!d.sign?.branch&&owner));
+  const canEditItems=!closed&&(adm||isd)&&!Object.keys(d.award||{}).length&&!d.sign?.purchaser;
+  const canDelete=!d.sign?.branch&&!closed&&(adm||owner);
+  const projected=items.reduce((a,x)=>a+(Number(x.p)||0),0), charged=items.reduce((a,x)=>a+(Number(x.c)||0),0);
+  const requestedBy=d.sign?.requested;
+  const itemRows=items.map((x,i)=>`<tr><td>${i+1}</td><td><b>${esc(x.n||x.name||x.description)}</b>${x.remarks?`<div class="prf-muted">${esc(x.remarks)}</div>`:""}</td><td>${esc(x.q)} ${esc(x.unit||"")}</td><td>${money(x.p)}</td><td>${x.c!==null&&x.c!==undefined?money(x.c):""}</td></tr>`).join("");
+  const canvass=Array.isArray(d.canvass)?d.canvass:[];
+  const canvassRows=canvass.map(x=>{const awarded=d.award?.[x.item]===x.id,editable=!closed&&(adm||isd||owner)&&!awarded,forceDelete=adm&&awarded;return `<tr><td>${esc((Number(x.item)||0)+1)}</td><td>${esc(items[x.item]?.n||"")}</td><td>${esc(x.name||"")}</td><td>${esc(x.store||"")}</td><td>${esc(x.date||"")}</td><td>${money(x.price)}</td><td>${esc(x.desc||"")}</td><td>${esc(x.remarks||"")}</td><td>${x.id?`<span class="prf-cv-file" data-cv="${esc(x.id)}">Loading...</span>${awarded?` <span class="badge Completed">AWARDED - LOCKED</span>`:""}${editable?` <button class="btn sec sm prf-cv-edit" data-cv="${esc(x.id)}">Edit</button><button class="btn red sm prf-cv-del" data-cv="${esc(x.id)}">Delete</button>`:""}${forceDelete?` <button class="btn red sm prf-cv-force" data-cv="${esc(x.id)}">Force Delete</button>`:""}`:""}</td></tr>`}).join("");
+  const awards=items.map((x,i)=>{const id=d.award?.[i],e=canvass.find(c=>c.id===id);return e?`<tr><td>${i+1}</td><td>${esc(x.n)}</td><td>${esc(e.store)}</td><td>${esc(e.name)}</td><td>${money(e.price)}</td></tr>`:""}).join("");
+
+  ["v-home","v-rep","v-isrf","v-set"].forEach(x=>$(x).classList.add("hide")); $("v-prf").classList.remove("hide"); $("prf-list-view").classList.add("hide"); $("prf-detail-view").classList.remove("hide"); $("vt").textContent="Procurement Request";
+  $("prf-detail-view").innerHTML=`
+    <div class="panel" style="padding:18px;margin-bottom:14px"><div class="fr"><div><h2>${esc(r.ID)}</h2><div class="prf-muted">${esc(r.Branch)}${r.Area?` (${esc(r.Area)})`:""} • ${esc(r.Date)} • ${esc(r.Status)}</div></div><span class="badge ${prfStatusClass(r.Status)}">${esc(r.Status||"")}</span></div>
+      <div class="acts2">
+       <button class="btn sec sm" id="prfback">Back to PRF list</button>
+       <button class="btn sec sm" id="prfprint">Print ${esc(prfName())}</button>
+       ${canEdit?`<button class="btn sec sm" id="prfedit">Edit</button>`:""}${canEditItems?`<button class="btn sec sm" id="prfitemsedit">Edit Requested Items</button>`:""}${canDelete?`<button class="btn red sm" id="prfdelete">Delete</button>`:""}
+       ${branchManager&&!d.sign?.branch&&!closed?`<button class="btn sm" id="prfapprove">Branch Manager Approve</button>`:""}
+       ${isd&&!closed?`<button class="btn sec sm" id="prfisnote">IS Notation</button>`:""}
+       ${!closed&&(owner||isd||adm)?`<button class="btn sec sm" id="prfcanvass">Add Canvass</button>`:""}
+       ${(isd||((PRF.flow.diag||[]).some(x=>String(x).toLowerCase()===String(u.username||"").toLowerCase())))&&!d.sign?.assessor&&!closed?`<button class="btn sm" id="prfassess">Diagnostic / Assess</button>`:""}
+       ${isd&&d.sign?.assessor&&!d.flow?.forwarded&&!closed?`<button class="btn sec sm" id="prfforward">Forward to Approvers</button>`:""}
+       ${acct&&!closed?`<button class="btn sec sm" id="prfacct">Accounting Review / Charges</button>`:""}
+       ${d.flow?.forwarded&&!closed&&d.sign?.verifier&&pendingApprovalCount(d)>0&&canApproveNext(r,d,u)?`<button class="btn sec sm" id="prfapproveflow">My Approval</button>`:""}
+       ${canAward(r,d,u)?`<button class="btn sec sm" id="prfaward">Award Purchase</button>`:""}
+       ${!closed&&Object.keys(d.award||{}).length?`<button class="btn sec sm" id="prfpurchase">Purchaser / OR</button>`:""}
+       ${!closed&&d.sign?.purchaser?`<button class="btn sec sm" id="prfdates">Dates</button>`:""}
+       ${isd&&!closed&&d.sign?.purchaser&&d.dates?.received?`<button class="btn sec sm" id="prffinalnote">Final IS Notation</button>`:""}
+       ${!closed&&(adm||u.role==="Reviewer")&&d.sign?.notation?`<button class="btn sec sm" id="prfcheck">Checker</button>`:""}
+       ${!closed&&(adm||isd||u.role==="Approver"||u.role==="Dept")?`<button class="btn red sm" id="prfreject">Reject</button>`:""}
+      </div>
+      ${!d.sign?.branch?`<div class="prf-alert">Pending Branch Manager approval. <b>ISD cannot assess or forward this request until the Branch Manager signs.</b> Early IS Notation and canvass may still be recorded.</div>`:""}
+      <div class="prf-flow">${prfStep("Requested by",requestedBy)}${prfStep("Branch Manager",d.sign?.branch)}${prfStep("Prepared / Assessed by",d.sign?.assessor)}${prfStep("Diagnostic Approved by",d.sign?.diagApproved)}${prfStep("Accounting Verifier",d.sign?.verifier)}${(PRF.flow.steps||[]).map(x=>prfStep(x.l||x.k,d.sign?.approvals?.[x.k])).join("")}${prfStep("Canvasser",d.sign?.canvasser)}${prfStep("Awarded by",d.sign?.awarded)}${prfStep("Purchaser",d.sign?.purchaser)}${prfStep("Final IS Notation",d.sign?.notation)}${prfStep("Checker",d.sign?.checker)}</div>
+    </div>
+    <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Request Information</h3><dl class="kv"><dt>Requested by</dt><dd>${esc(prfUserName(requestedBy))}</dd><dt>Branch / Office</dt><dd>${esc(r.Branch)}</dd><dt>Area</dt><dd>${esc(r.Area||"")}</dd><dt>Date of Request</dt><dd>${esc(r.Date)}</dd><dt>Reason</dt><dd style="white-space:pre-wrap">${esc(r.Reason||"")}</dd></dl></div>
+    <div class="panel" style="padding:18px;margin-bottom:14px"><div class="fr"><h3>Requested Items</h3><b>Projected: ${money(projected)} &nbsp; Account Charges: ${money(charged)}</b></div><div class="tw"><table><thead><tr><th>#</th><th>Item</th><th>Qty / Unit</th><th>Projected Amount</th><th>Account Charge</th></tr></thead><tbody>${itemRows}<tr><td></td><td><b>Total</b></td><td></td><td><b>${money(projected)}</b></td><td><b>${money(charged)}</b></td></tr></tbody></table></div></div>
+    <div class="panel" style="padding:18px;margin-bottom:14px"><h3>ISD Diagnostic</h3>${d.diag&&Object.keys(d.diag.items||{}).length?`<div class="tw"><table><thead><tr><th>#</th><th>Requested item</th><th>Damage / replacement group</th><th>Parts checked</th><th>Diagnostic remarks</th></tr></thead><tbody>${items.map((x,i)=>{const z=d.diag.items?.[i]||{};return `<tr><td>${i+1}</td><td>${esc(x.n)}</td><td>${esc(z.group||"")}</td><td>${esc(Object.keys(z.parts||{}).filter(k=>z.parts[k]).join(", "))}</td><td style="white-space:pre-wrap">${esc(z.remarks||"")}</td></tr>`}).join("")}</tbody></table></div><div style="margin-top:10px;white-space:pre-wrap"><b>Overall remarks:</b> ${esc(d.diag.remarks||"")}</div>`:`<div class="prf-muted">No diagnostic recorded yet.</div>`}<div class="acts2">${!closed&&(adm||isd||owner)&&d.diag&&Object.keys(d.diag.items||{}).length?`<button class="btn sec sm" id="prfdiagedit">Edit Diagnostic</button>`:""}${!closed&&d.sign?.assessor&&!d.sign?.diagApproved?`<button class="btn sm" id="prfdiagapprove">Approve Diagnostic</button>`:""}<button class="btn sec sm" id="prfdiagprint">Print Diagnostic</button></div></div>
+    ${d.sign?.isNotation||d.rem?.isNotation?`<div class="panel" style="padding:18px;margin-bottom:14px"><h3>IS Notation During Pending / In Progress</h3><div style="white-space:pre-wrap">${esc(d.rem?.isNotation||"")}</div><div class="prf-muted" style="margin-top:8px">${esc((fmt(d.sign?.isNotation)||{}).n||"")} ${esc((fmt(d.sign?.isNotation)||{}).t||"")}</div></div>`:""}
+    <div class="panel" style="padding:18px;margin-bottom:14px"><div class="fr"><h3>Canvass</h3><div class="acts2">${!closed&&d.items.every((x,i)=>d.award?.[i])&&!d.sign?.awarded?`<button class="btn sm" id="prfawardsign">Awarded by</button>`:""}${!closed&&d.sign?.awarded&&!d.sign?.awardApproved?`<button class="btn sm" id="prfawardapprove">Approve Award</button>`:""}<button class="btn sec sm" id="prfcanvassprint">Print Canvass</button></div></div>${canvass.length?`<div class="tw"><table><thead><tr><th>#</th><th>Requested Item</th><th>Item offered by store</th><th>Store</th><th>Date</th><th>Price</th><th>Description</th><th>Remarks</th><th>Attachment</th></tr></thead><tbody>${canvassRows}</tbody></table></div>`:`<div class="empty">No canvass entries yet. Add one quotation per requested item as available.</div>`}</div>
+    ${awards?`<div class="panel" style="padding:18px;margin-bottom:14px"><h3>Awarded Purchases</h3><div class="tw"><table><thead><tr><th>#</th><th>Item</th><th>Store</th><th>Offered Item</th><th>Award Price</th></tr></thead><tbody>${awards}</tbody></table></div></div>`:""}
+    <div class="panel" style="padding:18px;margin-bottom:14px"><h3>Purchaser / Receiving</h3><div class="tw"><table><thead><tr><th>#</th><th>Item</th><th>Awarded Store</th><th>OR Number</th><th>Purchase Store</th></tr></thead><tbody>${items.map((x,i)=>{const a=d.canvass?.find(c=>c.id===d.award?.[i]),b=d.buy?.[i]||{};return `<tr><td>${i+1}</td><td>${esc(x.n)}</td><td>${esc(a?.store||"")}</td><td>${esc(b.or||"")}</td><td>${esc(b.store||"")}</td></tr>`}).join("")}</tbody></table></div><dl class="kv"><dt>Date compiled</dt><dd>${esc(d.dates?.compiled||"")}</dd><dt>Date received</dt><dd>${esc(d.dates?.received||"")}</dd><dt>Transmittal</dt><dd>${esc(d.dates?.transmittal||"")}</dd></dl><div class="prf-muted" style="margin-top:10px">${d.audit?.awarded?`Awarded: ${esc(fmt(d.audit.awarded)?.n||"")} ${esc(fmt(d.audit.awarded)?.t||"")}`:""}${d.audit?.purchaser?`<br>Purchaser recorded: ${esc(fmt(d.audit.purchaser)?.n||"")} ${esc(fmt(d.audit.purchaser)?.t||"")}`:""}${d.audit?.received?`<br>Date received recorded by: ${esc(fmt(d.audit.received)?.n||"")} ${esc(fmt(d.audit.received)?.t||"")}`:""}${d.audit?.compiled?`<br>Date compiled recorded by: ${esc(fmt(d.audit.compiled)?.n||"")} ${esc(fmt(d.audit.compiled)?.t||"")}`:""}</div></div>
+    ${d.sign?.notation?`<div class="panel" style="padding:18px;margin-bottom:14px"><h3>Final IS Notation</h3><div style="white-space:pre-wrap">${esc(d.rem?.notation||"")}</div></div>`:""}
+    ${d.sign?.checker?`<div class="panel" style="padding:18px;margin-bottom:14px"><h3>Checker</h3><div style="white-space:pre-wrap">${esc(d.rem?.checker||"")}</div></div>`:""}
+    ${d.rejected?`<div class="panel" style="padding:18px"><h3>Rejection</h3><p>${esc(d.rejected.reason||"No reason provided.")}</p></div>`:""}`;
+  $("prfback").onclick=()=>{PRF.cur=null;prfListView()};
+  if($("prfprint"))$("prfprint").onclick=()=>printPRF(r);
+  if($("prfdiagprint"))$("prfdiagprint").onclick=()=>printDiagnostic(r);
+  if($("prfdiagedit"))$("prfdiagedit").onclick=()=>prfDiagnosticDlg(r);
+  document.querySelectorAll(".prf-cv-edit").forEach(el=>el.onclick=()=>prfCanvassDlg(r,el.dataset.cv));
+  document.querySelectorAll(".prf-cv-del").forEach(el=>el.onclick=async()=>{if(!confirm("Delete this canvass entry? This is allowed only before it is awarded."))return;try{await prfAct(r,"canvassDel",{id:el.dataset.cv});toast("Canvass deleted.");await prfLoad();const rr=PRF.rows.find(x=>x.ID===r.ID);if(rr)prfDetail(rr)}catch(e){toast(e.message)}});
+  document.querySelectorAll(".prf-cv-force").forEach(el=>el.onclick=async()=>{if(!confirm("ADMIN FORCE DELETE: This canvass entry has already been awarded. Delete it and clear its award?"))return;try{await prfAct(r,"canvassDel",{id:el.dataset.cv,force:"1"});toast("Awarded canvass force-deleted by Admin.");await prfLoad();const rr=PRF.rows.find(x=>x.ID===r.ID);if(rr)prfDetail(rr)}catch(e){toast(e.message)}});
+  if($("prfcanvassprint"))$("prfcanvassprint").onclick=()=>printCanvass(r);
+  if($("prfedit"))$("prfedit").onclick=()=>prfCreateDlg(r);
+  if($("prfitemsedit"))$("prfitemsedit").onclick=()=>prfItemsEditDlg(r);
+  if($("prfdelete"))$("prfdelete").onclick=async()=>{if(!confirm("Delete "+prfName()+" "+r.ID+"?"))return;try{await api("prfDelete",{id:r.ID});toast(prfName()+" deleted");PRF.cur=null;await prfLoad();prfListView()}catch(e){toast(e.message)}};
+  if($("prfapprove"))$("prfapprove").onclick=()=>prfAct(r,"branch",{});
+  if($("prfisnote"))$("prfisnote").onclick=()=>prfNotationDlg(r);
+  if($("prfcanvass"))$("prfcanvass").onclick=()=>prfCanvassDlg(r);
+  if($("prfassess"))$("prfassess").onclick=()=>prfDiagnosticDlg(r);
+  if($("prfdiagapprove"))$("prfdiagapprove").onclick=()=>prfCredentialDlg(r,'diagApprove','Approve Diagnostic','Enter the authorized approver username and password to approve the completed diagnostic.');
+  if($("prfforward"))$("prfforward").onclick=()=>prfForwardDlg(r);
+  if($("prfacct"))$("prfacct").onclick=()=>prfAccountingDlg(r);
+  if($("prfapproveflow"))$("prfapproveflow").onclick=()=>prfApprovalDlg(r);
+  if($("prfaward"))$("prfaward").onclick=()=>prfAwardDlg(r);
+  if($("prfawardsign"))$("prfawardsign").onclick=()=>prfCredentialDlg(r,'awardSign','Awarded By','Enter the authorized user username and password to record who awarded the selected purchase.');
+  if($("prfawardapprove"))$("prfawardapprove").onclick=()=>prfCredentialDlg(r,'awardApprove','Approve Award','Enter the authorized approver username and password to approve the selected award.');
+  if($("prfpurchase"))$("prfpurchase").onclick=()=>prfPurchaseDlg(r);
+  if($("prfdates"))$("prfdates").onclick=()=>prfDatesDlg(r);
+  if($("prffinalnote"))$("prffinalnote").onclick=()=>prfFinalNotationDlg(r);
+  if($("prfcheck"))$("prfcheck").onclick=()=>prfCheckDlg(r);
+  if($("prfreject"))$("prfreject").onclick=async()=>{const reason=prompt("Reason for rejecting this ${prfName()} (optional):");if(reason===null)return;await prfAct(r,"reject",{reason})};
+  // Load canvass quotation attachments and make them clickable directly from each row.
+  if(canvass.length){ try { const files=await api("files",{id:r.ID}); const byRef={}; files.filter(f=>String(f.Ref||"").indexOf("cv:")===0).forEach(f=>{byRef[f.Ref]=f}); document.querySelectorAll(".prf-cv-file").forEach(el=>{ const f=byRef["cv:"+el.dataset.cv]; if(!f){el.textContent="No attachment";return;} el.innerHTML=`<button type="button" class="btn sec sm" data-cvfile="${esc(f.FileId)}">📎 ${esc(f.Name)}</button>`; el.querySelector("button").onclick=async()=>{try{const d=await api("getFile",{fileId:f.FileId}),bin=atob(d.b64),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);const url=URL.createObjectURL(new Blob([a],{type:d.mime||"application/octet-stream"}));window.open(url,"_blank");setTimeout(()=>URL.revokeObjectURL(url),60000)}catch(e){toast(e.message)}}; }); } catch(e){} }
+}
+function pendingApprovalCount(d){return (d.flow?.steps||[]).filter(k=>!d.sign?.approvals?.[k]).length+(d.sign?.verifier?0:1)}
+function canApproveNext(r,d,u){const steps=PRF.flow.steps||[],d0=d||{},next=steps.find(x=>!d0.sign?.approvals?.[x.k]);if(!next)return false;const me=String(u.username||"").toLowerCase();return u.role==="Admin"||((next.u||[]).some(x=>String(x).toLowerCase()===me));}
+function canAward(r,d,u){const adm=u.role==="Admin",list=Array.isArray(PRF.flow.award)?PRF.flow.award:[],me=String(u.username||"").toLowerCase(),allowed=list.length?list.some(x=>String(x).toLowerCase()===me):u.role==="ISD";return !d.sign?.purchaser&&!d.rejected&&!d.sign?.checker&&(adm||allowed)}
+function canApproveAward(r,d,u){const adm=u.role==="Admin",me=String(u.username||"").toLowerCase(),ism=(PRF.flow.steps||[]).find(x=>String(x.k||"").toUpperCase()==="ISM"),ismOk=!!(ism&&Array.isArray(ism.u)&&ism.u.some(x=>String(x).toLowerCase()===me));return !d.sign?.purchaser&&!d.rejected&&!d.sign?.checker&&(adm||u.role==="Approver"||ismOk)}
+function pendingApprovals(d){let n=0;if(!d.sign?.verifier)n++;(d.flow?.steps||[]).forEach(k=>{if(!d.sign?.approvals?.[k])n++});return n}
+function prfListView(){
+  $("v-prf").classList.remove("hide");
+  $("prf-detail-view").classList.add("hide");
+  $("prf-list-view").classList.remove("hide");
+  $("vt").textContent="Procurement Requests";
+  if(!$("prfq")) return;
+  $("prfq").oninput=prfDraw;
+  $("prffs").onchange=prfDraw;
+  $("prfnew").onclick=()=>prfCreateDlg();
+  $("prfrefresh").onclick=prfLoad;
+  prfDraw();
+}
+
+async function prfAct(r,type,data){
+  try{
+    await api("prfAct",{id:r.ID,type,data:data||{}});
+    toast(type==="branch"?"Branch Manager approval recorded.":prfName()+" updated.");
+    await prfLoad();
+    const rr=PRF.rows.find(x=>x.ID===r.ID);
+    if(rr) prfDetail(rr);
+    else { PRF.cur=null; prfListView(); }
+  }catch(e){toast(e.message)}
+}
+
+function prfNotationDlg(r){
+  const old=r.Data?.rem?.isNotation||"";
+  prfOpen(`<h2>IS Notation</h2><div class="prf-muted">Add an IS note at any point while this ${prfName()} is pending or in progress. This does not complete or advance the procurement workflow.</div>
+    <label>Notation / remarks</label><textarea id="prfisnotetxt" rows="6" placeholder="Enter IS notation...">${esc(old)}</textarea>
+    <div class="acts"><button class="btn sec" id="prfinotcancel">Cancel</button><button class="btn" id="prfinotsave">Save IS notation</button></div>`);
+  $("prfinotcancel").onclick=prfClose;
+  $("prfinotsave").onclick=async()=>{const remarks=$("prfisnotetxt").value.trim();if(!remarks)return toast("Enter the IS notation.");await prfAct(r,"isnotation",{remarks});prfClose();};
+}
+
+function prfCanvassDlg(r,editId){
+ const d=r.Data||{},items=prfItems(d),today=prfDate(),old=editId?(d.canvass||[]).find(x=>x.id===editId):null;
+ if(editId&&!old)return toast("Canvass entry not found.");
+ const title=old?"Edit Canvass":"Add Canvass";
+ prfOpen(`<h2>${title}</h2><div class="prf-muted">You can add or edit quotations while the ${prfName()} is active. Once a quotation is awarded, it is locked and cannot be edited. An Admin may force-delete the awarded row if necessary.</div><div class="g2"><div><label>Requested item *</label><select id="prfcvitem">${items.map((x,i)=>`<option value="${i}" ${(old&&Number(old.item)===i)?"selected":""}>${i+1}. ${esc(x.n)}</option>`).join("")}</select></div><div><label>Date of canvass *</label><input id="prfcvdate" type="date" value="${esc(old?.date||today)}"></div><div><label>Store / supplier *</label><input id="prfcvstore" value="${esc(old?.store||"")}"></div><div><label>ITEM offered by store *</label><input id="prfcvname" value="${esc(old?.name||"")}"></div><div><label>Price *</label><input id="prfcvprice" type="number" min="0" step="0.01" value="${old?.price??""}"></div><div><label>Description</label><input id="prfcvdesc" value="${esc(old?.desc||"")}" placeholder="Brand, model, specifications"></div><div style="grid-column:1/-1"><label>Remarks</label><textarea id="prfcvremarks" rows="3">${esc(old?.remarks||"")}</textarea></div><div style="grid-column:1/-1"><label>Store quotation / attachment (optional)</label><input type="file" id="prfcvfile" accept=".pdf,.jpg,.jpeg,.png"><small class="prf-muted">${old?"Choose a new file only if you want to replace the existing quotation. ":""}PDF/JPG/PNG.</small></div></div><div class="acts"><button class="btn sec" id="prfcvcancel">Cancel</button><button class="btn" id="prfcvsave">${old?"Update canvass":"Save canvass"}</button></div>`);
+ $("prfcvcancel").onclick=prfClose;
+ $("prfcvsave").onclick=async()=>{const data={item:Number($("prfcvitem").value),date:$("prfcvdate").value,store:$("prfcvstore").value.trim(),name:$("prfcvname").value.trim(),price:Number($("prfcvprice").value),desc:$("prfcvdesc").value.trim(),remarks:$("prfcvremarks").value.trim(),id:editId||""};if(!data.store||!data.name)return toast('Store and offered item are required.');if(!(data.price>=0))return toast('Enter a valid price.');try{const id=await api('prfAct',{id:r.ID,type:'canvass',data});const f=$("prfcvfile").files[0];if(f){if(old){try{const files=await api('files',{id:r.ID});const prev=files.find(x=>x.Ref==='cv:'+id);if(prev)await api('delFile',{fileId:prev.FileId})}catch(e){}}const sh=await shrink(f);await api('upload',{id:r.ID,ref:'cv:'+id,name:sh.name,mime:sh.type,b64:await b64(sh)})}prfClose();toast(old?'Canvass updated.':'Canvass saved and signed.');await prfLoad();const rr=PRF.rows.find(x=>x.ID===r.ID);if(rr)prfDetail(rr)}catch(e){toast(e.message)};
+};
+}
+function prfItemsEditDlg(r){
+ const d=r.Data||{},items=prfItems(d),rows=items.map(x=>({...x}));
+ prfOpen(`<h2>Edit Requested Items</h2><div class="prf-muted">ISD or Admin may correct existing requested items and add more items. Existing rows cannot be removed from this editor. Requested items are locked once an award has been made.</div><div id="prfitemeditrows"></div><div class="acts"><button class="btn sec sm" id="prfitemsadd">+ Add item</button><button class="btn sec" id="prfitemseditcancel">Cancel</button><button class="btn" id="prfitemseditsave">Save Requested Items</button></div>`);
+ const draw=()=>{$("prfitemeditrows").innerHTML=rows.map((x,i)=>`<div class="prf-item" data-i="${i}"><b>${i+1}. Requested item</b><div class="g2"><div><label>Item *</label><input class="prf-ie-n" value="${esc(x.n||"")}"></div><div><label>Quantity *</label><input class="prf-ie-q" type="number" min="0.01" step="0.01" value="${esc(x.q??"")}"></div><div><label>Unit</label><input class="prf-ie-u" value="${esc(x.unit||"")}"></div><div><label>Projected amount *</label><input class="prf-ie-p" type="number" min="0" step="0.01" value="${esc(x.p??"")}"></div><div><label>Category / Group</label><input class="prf-ie-g" value="${esc(x.group||"")}"></div><div><label>Remarks</label><input class="prf-ie-r" value="${esc(x.remarks||"")}"></div></div>${i>=items.length?`<button type="button" class="btn red sm prf-ie-remove">Remove new item</button>`:""}</div>`).join("");
+ document.querySelectorAll(".prf-ie-remove").forEach((b,i)=>b.onclick=()=>{rows.splice(items.length+i,1);draw()});};
+ draw();
+ $("prfitemsadd").onclick=()=>{rows.push({n:"",q:1,p:0,unit:"",group:"",remarks:""});draw()};
+ $("prfitemseditcancel").onclick=prfClose;
+ $("prfitemseditsave").onclick=async()=>{const out=[...document.querySelectorAll("#prfitemeditrows .prf-item")].map(el=>({n:el.querySelector(".prf-ie-n").value.trim(),q:Number(el.querySelector(".prf-ie-q").value),unit:el.querySelector(".prf-ie-u").value.trim(),p:Number(el.querySelector(".prf-ie-p").value),group:el.querySelector(".prf-ie-g").value.trim(),remarks:el.querySelector(".prf-ie-r").value.trim()}));if(!out.length||out.some(x=>!x.n||!(x.q>0)||!(x.p>=0)))return toast("Complete every requested item.");try{await api("prfItemsEdit",{id:r.ID,data:{items:out}});prfClose();toast("Requested items updated.");await prfLoad();const rr=PRF.rows.find(x=>x.ID===r.ID);if(rr)prfDetail(rr)}catch(e){toast(e.message)}};
+}
+function prfDiagnosticDlg(r){
+ const d=r.Data||{},items=prfItems(d),groups=PRF.groups||{};
+ prfOpen(`<h2>ISD Diagnostic / Assessment</h2><div class="prf-muted">For each requested item, choose the damage/replacement group and tick every damaged or replacement part. Add diagnostic remarks, then sign as ISD Assessor.</div><div id="prfdg"></div><label>Overall ISD diagnostic remarks</label><textarea id="prfdiagremarks" rows="4">${esc(d.diag?.remarks||"")}</textarea><div class="acts"><button class="btn sec" id="prfdcancel">Cancel</button><button class="btn" id="prfdsave">Save Diagnostic</button></div>`);
+ $("prfdg").innerHTML=items.map((x,i)=>{const old=d.diag?.items?.[i]||{},g=old.group||"";return `<div class="prf-item" data-i="${i}"><b>${i+1}. ${esc(x.n)}</b><label>Damage / replacement group *</label><select class="prfd-group" data-i="${i}"><option value="">Select group</option>${Object.keys(groups).map(k=>`<option value="${esc(k)}" ${g===k?"selected":""}>${esc(k)}</option>`).join("")}</select><div class="prfd-parts" data-i="${i}" style="margin-top:8px"></div><label>Item diagnostic remarks</label><textarea class="prfd-rem" data-i="${i}" rows="3">${esc(old.remarks||"")}</textarea></div>`}).join("");
+ const drawParts=el=>{const i=el.dataset.i,g=el.value,old=d.diag?.items?.[i]?.parts||{},parts=groups[g]||[];el.closest('.prf-item').querySelector('.prfd-parts').innerHTML=g?`<div class="g2">${parts.map((p,j)=>`<label style="font-weight:400;border:1px solid var(--line);padding:8px;border-radius:6px"><input type="checkbox" class="prfd-part" data-i="${i}" data-p="${esc(p)}" ${old[p]?"checked":""} style="width:auto"> ${esc(p)}</label>`).join("")}</div>`:'<div class="prf-muted">Select a group to show damage/replacement checkboxes.</div>'};
+ document.querySelectorAll('.prfd-group').forEach(el=>{el.onchange=()=>drawParts(el);drawParts(el)});
+ $("prfdcancel").onclick=prfClose;
+ const collect=()=>{const obj={items:{},remarks:$("prfdiagremarks").value.trim()};document.querySelectorAll('.prf-item').forEach(el=>{const i=el.dataset.i,g=el.querySelector('.prfd-group').value;if(!g)return;const parts={};el.querySelectorAll('.prfd-part:checked').forEach(c=>parts[c.dataset.p]=true);obj.items[i]={group:g,parts,remarks:el.querySelector('.prfd-rem').value.trim()}});if(Object.keys(obj.items).length!==items.length){toast('Select a diagnostic group for every requested item.');return null}return obj};
+ $("prfdsave").onclick=async()=>{const obj=collect();if(obj){await prfAct(r,'diag',obj);prfClose()}};
+;
+}
+function prfAccountingDlg(r){
+ const d=r.Data||{},items=prfItems(d);prfOpen(`<h2>Accounting Review / Account Charges</h2><div class="prf-muted">Accounting may review each requested item, update the Account Charge, and add remarks. Sign as verifier when complete.</div><div id="prfacctrows"></div><label>Accounting remarks</label><textarea id="prfacctrem" rows="4">${esc(d.rem?.acct||"")}</textarea><div class="acts"><button class="btn sec" id="prfacctcancel">Cancel</button><button class="btn" id="prfacctsave">Save & Sign as Verifier</button></div>`);
+ $("prfacctrows").innerHTML=items.map((x,i)=>`<div class="prf-item"><b>${i+1}. ${esc(x.n)}</b><div class="g2"><div><label>Projected amount</label><input value="${esc(x.p)}" disabled></div><div><label>Account charge</label><input class="prf-ac" data-i="${i}" type="number" min="0" step="0.01" value="${esc(x.c??"")}"></div></div><label>Accounting item remark</label><input class="prf-ar" data-i="${i}" value="${esc(x.remarks||"")}"></div>`).join('');
+ $("prfacctcancel").onclick=prfClose;$("prfacctsave").onclick=async()=>{const charges=[...document.querySelectorAll('.prf-ac')].map(x=>x.value),remarks=$("prfacctrem").value.trim();try{await prfAct(r,'charges',{charges,remarks});await prfAct(r,'verify',{});prfClose();toast('Accounting verification recorded.');}catch(e){toast(e.message)}};
+}
+function prfApprovalDlg(r){const steps=PRF.flow.steps||[],d=r.Data||{};const next=steps.find(x=>!d.sign?.approvals?.[x.k]);if(!next)return toast('All configured approvals are already signed.');prfOpen(`<h2>${esc(next.l||next.k)} Approval</h2><div class="prf-muted">You are signing the configured approval step for this ${prfName()}.</div><label>Approval remarks</label><textarea id="prfaprem" rows="4"></textarea><div class="acts"><button class="btn sec" id="prfapcancel">Cancel</button><button class="btn" id="prfapsave">Sign Approval</button></div>`);$("prfapcancel").onclick=prfClose;$("prfapsave").onclick=async()=>{try{await prfAct(r,'approve',{key:next.k,remarks:$("prfaprem").value.trim()});prfClose()}catch(e){toast(e.message)}}}
+function prfAwardDlg(r){const d=r.Data||{},items=prfItems(d),cv=d.canvass||[];prfOpen(`<h2>Award Purchase</h2><div class="prf-muted">ISM or an authorized ISD user may select the store/quotation for each requested item.</div><div id="prfawrows"></div><div class="acts"><button class="btn sec" id="prfawcancel">Cancel</button><button class="btn" id="prfawsave">Save Award</button></div>`);$("prfawrows").innerHTML=items.map((x,i)=>{const opts=cv.filter(e=>Number(e.item)===i),sel=d.award?.[i]||'';return `<div class="prf-item"><b>${i+1}. ${esc(x.n)}</b><select class="prf-aw" data-i="${i}"><option value="">No award</option>${opts.map(e=>`<option value="${esc(e.id)}" ${sel===e.id?'selected':''}>${esc(e.store)} — ${esc(e.name)} — ${money(e.price)}</option>`).join('')}</select></div>`}).join('');$("prfawcancel").onclick=prfClose;$("prfawsave").onclick=async()=>{try{for(const el of document.querySelectorAll('.prf-aw'))await prfAct(r,'award',{item:Number(el.dataset.i),id:el.value});prfClose();toast('Award updated.')}catch(e){toast(e.message)}}}
+function prfPurchaseDlg(r){const d=r.Data||{},items=prfItems(d);prfOpen(`<h2>Purchaser / OR Details</h2><div class="prf-muted">Any authorized logged-in user may record the OR number and purchase store until the Checker signs. The Purchaser signature records who entered the purchase details.</div><div id="prfbuyrows"></div><div class="acts"><button class="btn sec" id="prfbuycancel">Cancel</button><button class="btn" id="prfbuysave">Save & Sign as Purchaser</button></div>`);$("prfbuyrows").innerHTML=items.map((x,i)=>{const a=d.canvass?.find(c=>c.id===d.award?.[i]),b=d.buy?.[i]||{};return `<div class="prf-item"><b>${i+1}. ${esc(x.n)}</b><div class="prf-muted">Awarded store: ${esc(a?.store||'')}</div><div class="g2"><div><label>OR Number *</label><input class="prf-or" data-i="${i}" value="${esc(b.or||'')}"></div><div><label>Actual store purchased from *</label><input class="prf-bs" data-i="${i}" value="${esc(b.store||a?.store||'')}"></div></div></div>`}).join('');$("prfbuycancel").onclick=prfClose;$("prfbuysave").onclick=async()=>{const rows={};document.querySelectorAll('.prf-or').forEach(x=>{const i=x.dataset.i;rows[i]={or:x.value.trim(),store:document.querySelector(`.prf-bs[data-i="${i}"]`).value.trim()}});if(Object.values(rows).some(x=>!x.or||!x.store))return toast('Enter OR number and purchase store for every item.');try{await prfAct(r,'buy',{rows});await prfAct(r,'purchaser',{});prfClose();toast('Purchaser signature recorded.')}catch(e){toast(e.message)}}}
+function prfDatesDlg(r){const d=r.Data||{};prfOpen(`<h2>${prfName()} Dates</h2><div class="prf-muted">Any authorized logged-in user may update these dates until the Checker signs. After checking, the dates are locked.</div><div class="g2"><div><label>Date compiled</label><input id="prfdcompiled" type="date" value="${esc(d.dates?.compiled||'')}"></div><div><label>Date received</label><input id="prfdreceived" type="date" value="${esc(d.dates?.received||'')}"></div><div><label>Transmittal date</label><input id="prfdtrans" type="date" value="${esc(d.dates?.transmittal||'')}"></div></div><div class="acts"><button class="btn sec" id="prfdatecancel">Cancel</button><button class="btn" id="prfdatesave">Save dates</button></div>`);$("prfdatecancel").onclick=prfClose;$("prfdatesave").onclick=async()=>{try{await prfAct(r,'dates',{compiled:$("prfdcompiled").value,received:$("prfdreceived").value,transmittal:$("prfdtrans").value});prfClose()}catch(e){toast(e.message)}}}
+function prfFinalNotationDlg(r){prfOpen(`<h2>Final IS Notation</h2><div class="prf-muted">This is the final IS notation after the item has been received.</div><textarea id="prffinaltext" rows="6">${esc(r.Data?.rem?.notation||'')}</textarea><div class="acts"><button class="btn sec" id="prffinalcancel">Cancel</button><button class="btn" id="prffinalsave">Sign Final Notation</button></div>`);$("prffinalcancel").onclick=prfClose;$("prffinalsave").onclick=async()=>{const t=$("prffinaltext").value.trim();if(!t)return toast('Enter the final IS notation.');try{await prfAct(r,'notation',{remarks:t});prfClose()}catch(e){toast(e.message)}}}
+function prfCheckDlg(r){prfOpen(`<h2>Checker</h2><div class="prf-muted">Review the completed procurement record and sign as checker.</div><textarea id="prfchecktext" rows="6">${esc(r.Data?.rem?.checker||'')}</textarea><div class="acts"><button class="btn sec" id="prfcheckcancel">Cancel</button><button class="btn" id="prfchecksave">Sign as Checker</button></div>`);$("prfcheckcancel").onclick=prfClose;$("prfchecksave").onclick=async()=>{const t=$("prfchecktext").value.trim();try{await prfAct(r,'check',{remarks:t});prfClose()}catch(e){toast(e.message)}}}
+function prfNotationDlg(r){const old=r.Data?.rem?.isNotation||'';prfOpen(`<h2>IS Notation</h2><div class="prf-muted">ISD may add this notation while the PRF is pending or in progress. It does not advance the workflow.</div><textarea id="prfisnotetxt" rows="6">${esc(old)}</textarea><div class="acts"><button class="btn sec" id="prfinotcancel">Cancel</button><button class="btn" id="prfinotsave">Save & Sign IS Notation</button></div>`);$("prfinotcancel").onclick=prfClose;$("prfinotsave").onclick=async()=>{const t=$("prfisnotetxt").value.trim();if(!t)return toast('Enter the IS notation.');try{await prfAct(r,'isnotation',{remarks:t});prfClose()}catch(e){toast(e.message)}}}
+function prfForwardDlg(r){
+  const steps=PRF.flow.steps||[];
+  prfOpen(`<h2>Forward ${prfName()}</h2><div class="prf-muted">Only forward this request after Branch Manager approval has been recorded.</div>
+    ${!r.Data?.sign?.branch?`<div class="prf-alert">Branch Manager approval is still pending.</div>`:""}
+    <div>${steps.map(s=>`<label style="font-weight:400"><input class="prffstep" type="checkbox" value="${esc(s.k)}"> ${esc(s.l||s.k)}</label>`).join("")||"<div class='prf-muted'>No approval steps are configured.</div>"}</div>
+    <div class="acts"><button class="btn sec" id="prffcancel">Cancel</button><button class="btn" id="prffsave">Forward</button></div>`);
+  $("prffcancel").onclick=prfClose;
+  $("prffsave").onclick=async()=>{
+    if(!r.Data?.sign?.branch)return toast("Branch Manager must approve the PRF before it can be forwarded.");
+    const steps=[...document.querySelectorAll(".prffstep:checked")].map(x=>x.value);
+    if(!steps.length)return toast("Select at least one approval step.");
+    await prfAct(r,"forward",{steps});prfClose();
+  };
+}
+
+function prfPrintShell(title, body){
+  const brand=BR||{};
+  const ui=brand.ui||{};
+  const color=ui.primary||ui.color||'#10243a';
+  const footer=ui.footer||'';
+  const logo=brand.logo?`<img src="${brand.logo}" alt="">`:esc((brand.name||'IS').slice(0,2).toUpperCase());
+  const company=brand.name||'IS PROJECTS';
+  const w=window.open('','_blank','width=1000,height=800');
+  if(!w)return;
+  w.document.write(`<html><head><meta charset="utf-8"><title>${esc(title)}</title><style>
+    @page{size:A4 portrait;margin:5mm}
+    *{box-sizing:border-box}
+    body{margin:0;background:#fff;font:8px/1.12 'IBM Plex Sans',Arial,sans-serif;color:#10243a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .pr{width:100%;min-height:277mm;display:block;overflow:hidden}
+    .pr-h{display:flex;align-items:center;gap:6px;padding-bottom:3px;border-bottom:1.5px solid ${color}
+    }.pr-lg{width:30px;height:30px;border-radius:3px;background:${color};color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px;overflow:hidden;flex:none}
+    .pr-lg img{width:100%;height:100%;object-fit:contain;background:#fff}.pr-co{flex:1}.pr-co b{font-size:12px;display:block;line-height:1.05}.pr-co span{color:#64748b;font-size:6.5px}.pr-id{text-align:right}.pr-id small{display:block;color:#64748b;text-transform:uppercase;letter-spacing:.03em;font-size:6px}.pr-id b{font-size:10px}.pr-st{display:inline-block;margin-top:0;border:1px solid ${color};border-radius:2px;padding:0 4px;font-weight:600;font-size:6.5px;text-transform:uppercase}
+    .pr-t{text-align:center;font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:3px 0 1px}.pr-s{background:${color};color:#fff;font-size:6.5px;letter-spacing:.04em;text-transform:uppercase;padding:1.5px 3px;margin-top:2.5px;line-height:1}
+    .pr-g{width:100%;border-collapse:collapse}.pr-g td{border:1px solid #9aa8b6;padding:1.5px 3px;vertical-align:top;white-space:normal;background:#fff;color:#10243a}.pr-g td.k{width:13%;background:#eef2f6;font-weight:600;font-size:6.5px}.pr-b{border:1px solid #9aa8b6;border-top:0;padding:2px 4px;white-space:pre-wrap}.pr-rh{background:#eef2f6;border:1px solid #9aa8b6;border-top:0;padding:1px 4px;font-weight:600;font-size:6.5px}
+    .pr-sgs{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid #9aa8b6;border-top:1px solid #9aa8b6}.pr-sg{border-right:1px solid #9aa8b6;border-bottom:1px solid #9aa8b6;padding:2px 3px;min-height:38px;display:flex;flex-direction:column}.pr-sg small{text-transform:uppercase;letter-spacing:.02em;font-size:5.8px;color:#64748b;font-weight:600}.pr-sn{font:600 11px 'Dancing Script',cursive;min-height:12px;margin-top:0;line-height:1}.pr-ln{border-top:1px solid ${color};margin-top:auto}.pr-nm{font-weight:600;font-size:6.5px;margin-top:0}.pr-dt{font-size:5.8px;color:#64748b}.pr-f{margin-top:3px;padding-top:2px;border-top:1px solid #9aa8b6;font-size:5.8px;color:#64748b;display:flex;justify-content:space-between;gap:5px}.pr-table{width:100%;border-collapse:collapse}.pr-table th,.pr-table td{border:1px solid #9aa8b6;padding:1px 2px;vertical-align:top;white-space:normal;line-height:1.05}.pr-table th{background:#eef2f6;color:#10243a;font-weight:600;font-size:5.8px;text-transform:uppercase;letter-spacing:0}.pr-table td{font-size:6.2px}.pr-table td.num{text-align:right;white-space:nowrap}.muted{color:#64748b}.nowrap{white-space:nowrap}
+    .pr-s,.pr-table,.pr-g,.pr-sgs{page-break-inside:avoid;break-inside:avoid}.pr-table tr{page-break-inside:avoid;break-inside:avoid}
+  </style></head><body>
+  <div class="pr">
+    <div class="pr-h"><div class="pr-lg">${logo}</div><div class="pr-co"><b>${esc(company)}</b><span>${esc(company)} - Monitoring System</span></div><div class="pr-id"><small>Reference no.</small><b>${esc(title.replace(/^.*?([A-Z]+-\\d{4}-\\d+)$/,'$1'))}</b><br><span class="pr-st">${esc(prfName())}</span></div></div>
+    ${body}
+    <div class="pr-f"><span>${esc(footer)}</span><span>Printed ${new Date().toLocaleString('en-GB')} by ${esc((S.user||{}).name||'')}</span></div>
+  </div>
+  <script>window.onload=()=>setTimeout(()=>{const p=document.querySelector('.pr');if(p){const target=Math.max(1,window.innerHeight-2),h=p.scrollHeight,sc=h>target?target/h:1;if(sc<1){p.style.transformOrigin='top left';p.style.transform='scale('+sc+')';p.style.width=(100/sc)+'%';p.style.height=(h*sc)+'px';}}window.print()},300)<\\/script></body></html>`);
+  w.document.close();
+}
+function prfPrintHeader(title,r){return `<div class="pr-t">${esc(title)}</div><div class="pr-b" style="border-top:1px solid #9aa8b6"><b>${esc(r.ID)}</b> &nbsp; Status: ${esc(r.Status)} &nbsp; Branch / Office: ${esc(r.Branch||'')} &nbsp; Date: ${esc(r.Date||'')} &nbsp; Area: ${esc(r.Area||'')}</div>`}
+function prfPrintSection(n,title,content){return `<div class="pr-s">${n}. ${esc(title)}</div>${content}`}
+function prfPrintTable(headers,rows){return `<table class="pr-table"><thead><tr>${headers.map(x=>`<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows||'<tr><td colspan="'+headers.length+'" class="muted">No records.</td></tr>'}</tbody></table>`}
+function prfStepPrint(label,s){const f=fmt(s);return `<div class="pr-sg"><small>${esc(label)}</small><div class="pr-sn">${f?esc(f.n):''}</div><div class="pr-ln"></div>${f?`<div class="pr-nm">${esc(f.n)}</div><div class="pr-dt">${esc(f.t)}</div>`:'<div class="pr-dt">Pending signature</div>'}</div>`}
+function printPRF(r){
+  const d=r.Data||{},items=prfItems(d),cv=Array.isArray(d.canvass)?d.canvass:[];
+  const awardRows=items.map((x,i)=>{const e=cv.find(c=>c.id===d.award?.[i]);const aps=(PRF.flow.steps||[]).map(st=>{const a=d.sign?.approvals?.[st.k];return a?esc(prfUserName(a))+' ('+esc(st.l||st.k)+')':''}).filter(Boolean).join('<br>');return `<tr><td>${i+1}</td><td><b>${esc(x.n)}</b>${x.remarks?`<br><span class="muted">${esc(x.remarks)}</span>`:''}</td><td>${esc(x.q)} ${esc(x.unit||'')}</td><td class="num">${money(x.p)}</td><td class="num">${money(x.c)}</td><td>${esc(e?.store||'')}</td><td class="num">${money(e?.price)}</td><td>${e?esc(prfUserName(d.sign?.awarded)):'-'}</td><td>${e?esc(prfUserName(d.sign?.awardApproved)):'-'}</td></tr>`}).join('');
+  const diagRows=items.map((x,i)=>{const z=d.diag?.items?.[i]||{};return `<tr><td>${i+1}</td><td>${esc(x.n)}</td><td>${esc(z.group||'')}</td><td>${esc(Object.keys(z.parts||{}).filter(k=>z.parts[k]).join(', '))}</td><td>${esc(z.remarks||'')}</td></tr>`}).join('');
+  const cvRows=cv.map(x=>`<tr><td>${Number(x.item)+1}</td><td>${esc(items[x.item]?.n||'')}</td><td>${esc(x.name||'')}</td><td>${esc(x.store||'')}</td><td>${esc(x.date||'')}</td><td class="num">${money(x.price)}</td><td>${esc(x.desc||'')}</td><td>${esc(x.remarks||'')}</td></tr>`).join('');
+  const sigs=`<div class="pr-sgs">${prfStepPrint('Requested by',d.sign?.requested)}${prfStepPrint('Attested by — Branch Manager',d.sign?.branch)}${prfStepPrint('Prepared / Assessed by',d.sign?.assessor)}${prfStepPrint('Diagnostic Approved by',d.sign?.diagApproved)}${prfStepPrint('Accounting Verifier',d.sign?.verifier)}${(PRF.flow.steps||[]).map(x=>prfStepPrint(x.l||x.k,d.sign?.approvals?.[x.k])).join('')}${prfStepPrint('Canvasser',d.sign?.canvasser)}${prfStepPrint('Awarded by',d.sign?.awarded)}${prfStepPrint('Purchaser',d.sign?.purchaser)}${prfStepPrint('Final IS Notation',d.sign?.notation)}${prfStepPrint('Checker',d.sign?.checker)}</div>`;
+  let n=1;
+  const body=prfPrintHeader(prfName()+' Form',r)
+    +prfPrintSection(n++,'Request Information',`<table class="pr-g"><tr><td class="k">Requested by</td><td>${esc(prfUserName(d.sign?.requested))}</td><td class="k">Area</td><td>${esc(r.Area||'')}</td></tr><tr><td class="k">Reason</td><td colspan="3" style="white-space:pre-wrap">${esc(r.Reason||'')}</td></tr></table>`)
+    +prfPrintSection(n++,'Requested Items / Accounting',prfPrintTable(['#','Item','Qty / Unit','Projected Amount','Account Charge','Award Store','Award Price','Awarded by','Approved by'],awardRows))
+    +prfPrintSection(n++,'ISD Diagnostic / Assessment',prfPrintTable(['#','Requested Item','Group','Damaged / Replacement Parts','Diagnostic Remarks'],diagRows)+`<div class="pr-b"><b>Overall ISD Diagnostic Remarks:</b><br>${esc(d.diag?.remarks||'-')}</div>`)
+    +prfPrintSection(n++,'Canvass',prfPrintTable(['#','Requested Item','Item Offered by Store','Store','Date','Price','Description','Remarks'],cvRows))
+    +prfPrintSection(n++,'Workflow / Sign-offs',sigs)
+    +prfPrintSection(n++,'Dates / Notations',`<table class="pr-g"><tr><td class="k">Date compiled</td><td>${esc(d.dates?.compiled||'-')}</td><td class="k">Date received</td><td>${esc(d.dates?.received||'-')}</td><td class="k">Transmittal</td><td>${esc(d.dates?.transmittal||'-')}</td></tr><tr><td class="k">IS Notation</td><td colspan="5" style="white-space:pre-wrap">${esc(d.rem?.isNotation||d.rem?.notation||'-')}</td></tr></table>`);
+  prfPrintShell(prfName()+' '+r.ID,body);
+}
+function printDiagnostic(r){
+  const d=r.Data||{},items=prfItems(d);const rows=items.map((x,i)=>{const z=d.diag?.items?.[i]||{};return `<tr><td>${i+1}</td><td>${esc(x.n)}</td><td>${esc(z.group||'')}</td><td>${esc(Object.keys(z.parts||{}).filter(k=>z.parts[k]).join(', '))}</td><td>${esc(z.remarks||'')}</td></tr>`}).join('');
+  const body=prfPrintHeader('ISD Diagnostic / Assessment',r)+prfPrintSection(1,'Diagnostic Findings',prfPrintTable(['#','Requested Item','Group','Damaged / Replacement Parts','Diagnostic Remarks'],rows))+`<div class="pr-s">2. Overall ISD Diagnostic Remarks</div><div class="pr-b">${esc(d.diag?.remarks||'-')}</div><div class="pr-s">3. Diagnostic Attestation / Approval</div><div class="pr-sgs">${prfStepPrint('Attested by — Branch Manager',d.sign?.branch)}${prfStepPrint('Prepared / Assessed by — ISD',d.sign?.assessor)}${prfStepPrint('Approved by — Diagnostic Approver',d.sign?.diagApproved)}</div></div>`;
+  prfPrintShell('Diagnostic '+r.ID,body);
+}
+function printCanvass(r){
+  const d=r.Data||{},items=prfItems(d),cv=Array.isArray(d.canvass)?d.canvass:[];const rows=cv.map(x=>`<tr><td>${Number(x.item)+1}</td><td>${esc(items[x.item]?.n||'')}</td><td>${esc(x.name||'')}</td><td>${esc(x.date||'')}</td><td>${esc(x.store||'')}</td><td class="num">${money(x.price)}</td><td>${esc(x.desc||'')}</td><td>${esc(x.remarks||'')}</td></tr>`).join('');
+  const awardStoreRows=items.map((x,i)=>{const e=cv.find(c=>c.id===d.award?.[i]);return `<tr><td>${i+1}</td><td>${esc(x.n)}</td><td>${esc(e?.store||'-')}</td><td>${esc(e?.name||'-')}</td><td class="num">${money(e?.price)}</td><td>${esc(e?prfUserName(d.sign?.awarded):'-')}</td><td>${esc(e?prfUserName(d.sign?.awardApproved):'-')}</td></tr>`}).join('');
+  const body=prfPrintHeader('Canvass Form',r)+prfPrintSection(1,'Canvass Entries',prfPrintTable(['#','Requested Item','Item Offered by Store','Date','Store','Price','Description','Remarks'],rows))+prfPrintSection(2,'Award / Approval',prfPrintTable(['#','Requested Item','Award Store','Awarded Item','Award Price','Awarded by','Approved by'],awardStoreRows))+`<div class="pr-s">3. Canvasser</div><div class="pr-sgs">${prfStepPrint('Canvassed by',d.sign?.canvasser)}</div><div class="pr-b muted">Store quotation attachments are maintained in the PRF attachments.</div>`;
+  prfPrintShell('Canvass '+r.ID,body);
+}
+function prfStartView(){
+  // One merged PRF application inside isrf.html. Keep list/detail containers alive.
+  PRF.cur=null;
+  prfListView();
+  prfLoad();
+}
+
+</script></body></html>

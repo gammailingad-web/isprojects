@@ -43,7 +43,20 @@ function upg(name, hdr) {
     if (name === 'ISRF' && hdr[i] === 'Monitoring' && s.getLastRow() > 1) s.getRange(2, i + 1, s.getLastRow() - 1, 1).setValue('ISRF');
   }
 }
-function upgrade() { upg('ISRF', H); upg('Users', UH); }
+function upgrade() { upg('ISRF', H); upg('Users', UH); upg('Files', FH); }
+/* MOVING TO ANOTHER GOOGLE ACCOUNT: run this once in the NEW account after putting the attachment files in a Drive folder named
+   "IS PROJECTS Attachments". It reconnects every attachment record to the files in that folder (matching by file name). */
+function relinkAttachments() {
+  const me = Session.getEffectiveUser().getEmail(), it = DriveApp.getFoldersByName('IS PROJECTS Attachments'); let folder = null;
+  while (it.hasNext()) { const f = it.next(); try { if (f.getOwner() && f.getOwner().getEmail() === me) { folder = f; break; } } catch (e) {} }
+  if (!folder) throw new Error('Create a Drive folder named "IS PROJECTS Attachments" in this account and put the attachment files in it first');
+  cfgSet('FolderId', folder.getId());
+  const byName = {}, fi = folder.getFiles(); while (fi.hasNext()) { const x = fi.next(); byName[x.getName().replace(/^Copy of /, '')] = x.getId(); }
+  const sheet = fsheet(); let ok = 0, missing = [];
+  frows().forEach(r => { const id = byName[r.RecordID + '_' + r.Name]; if (id) { sheet.getRange(r._row, 1).setValue(id); ok++; } else missing.push(r.RecordID + '_' + r.Name); });
+  Logger.log('Relinked ' + ok + ' file(s). Not found: ' + missing.length + (missing.length ? ' -> ' + missing.slice(0, 20).join(', ') : ''));
+}
+
 function authorize() { DriveApp.getRootFolder(); MailApp.getRemainingDailyQuota(); LockService.getScriptLock().tryLock(1000); LockService.getScriptLock().releaseLock(); CacheService.getScriptCache().put('t', '1', 10); Logger.log('Authorized OK'); }
 function testLogin() { Logger.log(JSON.stringify(handle({action:'login', username:'admin', password:'admin123'}))); }
 
@@ -85,8 +98,13 @@ function status(r) {
 }
 const need = (s, roles) => { if (!s || roles.indexOf(s.role) < 0) throw new Error('Not allowed for your role'); };
 const sig = s => s.name + '|' + new Date().toISOString();
-function save(rec) { SS.getSheetByName('ISRF').getRange(rec._row, 1, 1, H.length).setValues([H.map(k => rec[k] === undefined ? '' : rec[k])]); }
-function find(id) { const r = rows('ISRF').find(x => x.ID === id); if (!r) throw new Error('Record not found'); return r; }
+function save(rec) {
+  if (!rec || !rec._row) throw new Error('Invalid ISRF record: spreadsheet row could not be determined.');
+  const sheet = SS.getSheetByName('ISRF');
+  if (!sheet) throw new Error('ISRF sheet was not found.');
+  sheet.getRange(rec._row, 1, 1, H.length).setValues([H.map(k => rec[k] === undefined ? '' : rec[k])]);
+}
+function find(id) { if (String(id).indexOf('PRF-') === 0) { psheet(); const p = rows('PRF').find(x => x.ID === id); if (!p) throw new Error('Record not found'); p._prf = true; return p; } const r = rows('ISRF').find(x => x.ID === id); if (!r) throw new Error('Record not found'); return r; }
 const norm = v => String(v || '').toLowerCase().replace(/\s+/g, ' ').trim();
 /* Duplicate = same date + branch + error type + problem details (ignoring case/extra spaces). Rejected requests do not count. */
 function findDup(x, skipId) {
@@ -100,10 +118,10 @@ const areaOf = b => { const f = config().Branch.find(x => x.name === b); return 
 const scopeOf = s => String(s.branch || '').split(',').map(x => x.trim()).filter(Boolean);
 function inScope(s, rec) { if (s.role === 'Admin') return true; const t = scopeOf(s); return t.indexOf('*') >= 0 || t.indexOf(rec.Branch) >= 0 || (!!rec.Area && t.indexOf('@' + rec.Area) >= 0); }
 function canSee(s, rec) { return inScope(s, rec) && !(s.role === 'Dept' && String(rec.ForwardTo).split(',').indexOf(s.dept) < 0); }
-function findS(s, id) { const r = find(id); if (!canSee(s, r)) throw new Error('This request is outside your assigned branches'); return r; }
+function findS(s, id) { const r = find(id); if (r._prf) { if (!pvis(s, r, pdef(pdata(r)))) throw new Error('This request is outside your assigned branches'); return r; } if (!canSee(s, r)) throw new Error('This request is outside your assigned branches'); return r; }
 
 /* ---- attachments (stored in one Google Drive folder, metadata in the Files tab) ---- */
-const SET = {MaxFileMB: 2, MaxFiles: 5, CapMB: 3000, RetainDays: 365}, FH = ['FileId','RecordID','Name','Size','Mime','UploadedBy','UploadedAt'];
+const SET = {MaxFileMB: 2, MaxFiles: 5, CapMB: 3000, RetainDays: 365}, FH = ['FileId','RecordID','Name','Size','Mime','UploadedBy','UploadedAt','Ref'];
 function settings() { const o = Object.assign({}, SET); rows('Config').forEach(r => { if (r.Type === 'Setting' && SET.hasOwnProperty(r.Value) && r.Area !== '') o[r.Value] = Number(r.Area); }); return o; }
 function cfgGet(k) { const f = rows('Config').find(x => x.Type === 'Setting' && x.Value === k); return f ? f.Area : ''; }
 function cfgSet(k, v) { const f = rows('Config').find(x => x.Type === 'Setting' && x.Value === k), c = SS.getSheetByName('Config'); if (f) c.getRange(f._row, 3).setValue(v); else c.appendRow(['Setting', k, v]); }
@@ -214,9 +232,9 @@ function gatewaySms(to, message) {
 }
 
 /* ---- database export / transfer to SQL Server ---- */
-const SQLT = {ISRF: {pk: 'ID'}, Users: {pk: 'Username', bit: ['Active']}, Messages: {pk: 'ID'}, Signups: {pk: 'ID'}, Files: {pk: 'FileId'}, Config: {}};
+const SQLT = {ISRF: {pk: 'ID'}, PRF: {pk: 'ID'}, Users: {pk: 'Username', bit: ['Active']}, Messages: {pk: 'ID'}, Signups: {pk: 'ID'}, Files: {pk: 'FileId'}, Config: {}};
 function exportAll() {
-  return ['ISRF','Users','Config','Messages','Signups','Files'].filter(n => SS.getSheetByName(n)).map(n => {
+  return ['ISRF','PRF','Users','Config','Messages','Signups','Files'].filter(n => SS.getSheetByName(n)).map(n => {
     const v = SS.getSheetByName(n).getDataRange().getValues(), cols = v.shift().map(String), t = SQLT[n] || {};
     const out = v.filter(r => r.join('') !== '').map(r => r.map((x, j) => x instanceof Date ? Utilities.formatDate(x, Session.getScriptTimeZone(), 'yyyy-MM-dd') : (n === 'Signups' && cols[j] === 'Hash') ? '' : (x === true || x === false) ? x : String(x == null ? '' : x)));
     return {name: n, cols, rows: out, pk: t.pk || null, bit: t.bit || []};
@@ -242,6 +260,92 @@ function transferSql(p) {
     conn.commit();
   } catch (e) { try { conn.rollback(); } catch (x) {} throw e; } finally { conn.close(); }
   return out;
+}
+
+/* ---- Procurement Request Form (PRF) ---- */
+const PH = ['ID','Date','Area','Branch','Reason','Status','CreatedBy','Data'];
+const PRF_GROUPS = {'SYSTEM UNIT': ['Motherboard','Memory (RAM)','HDD/SSD','Power supply','Power cord','CPU fan'], 'CCTV': ['Siamese wire or connector','Video power supply','DVR power supply','Hard disk drive','Camera','DVR'],
+  'PRINTER DOT MATRIX': ['Printer cord','Power cord','Ribbon','Printer head'], 'PRINTER INKJET': ['Printer cord','Power cord','Ink','Printer head','Roller feeder','Scanner head'], 'UPS': ['Battery','Power button','Fuse','Power cord','Main board'],
+  'MONITOR': ['Screen','Power cord/power supply','VGA/HDMI cable','VGA/HDMI port','Main board'], 'SWITCH HUB': ['Power cord','Port','Power'], 'LAPTOP': ['Screen','Charger','Keyboard','Battery','HDD/SSD','RAM','Motherboard'], 'OTHER': ['Headset/headphone']};
+const PRF_FLOW = {name:'PRF', steps: [{k:'AM', l:'Area Manager', u:[]}, {k:'ISM', l:'Information System Manager', u:[]}, {k:'COO', l:'Chief Operating Officer', u:[]}], acct: 'Accounting'};
+function psheet() { const had = SS.getSheetByName('PRF'), s = sh('PRF', PH); if (!had) s.getRange('B:B').setNumberFormat('@'); return s; }
+function prfCfg() { let g, f; try { g = JSON.parse(cfgGet('PRFGroups')); } catch (e) {} try { f = JSON.parse(cfgGet('PRFFlow')); } catch (e) {} return {groups: g && Object.keys(g).length ? g : PRF_GROUPS, flow: f && f.steps ? f : PRF_FLOW}; }
+function pdata(rec) { try { return JSON.parse(rec.Data || '{}'); } catch (e) { return {}; } }
+function pdef(d) { d.items = d.items || []; d.diag = d.diag || {items: {}, remarks: ''}; d.sign = d.sign || {}; d.sign.approvals = d.sign.approvals || {}; d.flow = d.flow || {steps: []}; d.rem = d.rem || {}; d.canvass = d.canvass || []; d.award = d.award || {}; d.buy = d.buy || {}; d.dates = d.dates || {}; d.audit = d.audit || {}; return d; }
+function pendingApprovals(d) { const o = []; if (!d.sign.verifier) o.push('Accounting'); d.flow.steps.forEach(k => { if (!d.sign.approvals[k]) o.push(k); }); return o; }
+function pstat(rec, d) {
+  const s = d.sign;
+  if (d.rejected) return 'Rejected'; if (s.checker) return 'Completed'; if (s.notation) return 'For Check';
+  if (s.purchaser) return d.dates.received ? 'For Notation' : 'For Receiving';
+  if (!s.branch && !s.assessor) return 'Pending Branch Approval';
+  if (!s.assessor) return 'For ISD Assessment'; if (!d.flow.forwarded) return 'For Forwarding';
+  // Accounting is a dedicated stage in the request list. Keep it separate
+  // from the later configured approval steps so users can immediately see
+  // that the request is waiting for Accounting review/verification.
+  if (!s.verifier) return 'Pending for Accounting';
+  const p = pendingApprovals(d); if (p.length) return 'Pending: ' + p.join(', ');
+  const aw = d.items.filter((x, i) => d.award[i]).length; if (aw < d.items.length) return d.canvass.length ? 'For Award' : 'For Canvass';
+  return 'For Purchase';
+}
+function pvis(s, rec, d) {
+  if (!inScope(s, rec)) return false;
+  if (s.role === 'Admin') return true;
+  if (s.role === 'User') return rec.CreatedBy === s.username;
+  const me = String(s.username || '').toLowerCase();
+  const fl = prfCfg().flow || PRF_FLOW;
+  const assignedStep = Array.isArray(d.flow && d.flow.steps) && d.flow.steps.some(k => {
+    const st = (fl.steps || []).find(x => x.k === k);
+    return st && Array.isArray(st.u) && st.u.some(u => String(u).toLowerCase() === me);
+  });
+  const diagUser = Array.isArray(fl.diag) && fl.diag.length && fl.diag.some(u => String(u).toLowerCase() === me);
+  const awardUser = Array.isArray(fl.award) && fl.award.length && fl.award.some(u => String(u).toLowerCase() === me);
+  const acctUser = s.role === 'Dept' && String(s.dept || '').toLowerCase() === String(fl.acct || 'Accounting').toLowerCase();
+  // ISD/Admin must be able to see a PRF at any stage so ISD notation,
+  // diagnostic, canvass and other authorized actions can be performed.
+  if (s.role === 'ISD' || s.role === 'Reviewer' || diagUser || awardUser || acctUser) return true;
+  // Configured approval users can see the request when it has reached the
+  // approval flow, but only their own configured step can be signed.
+  if (assignedStep) return !!(d.flow && d.flow.forwarded);
+  // Branch Manager/Approver can see pending branch approvals in their scope.
+  if (s.role === 'Approver') return !d.sign.branch;
+  return false;
+}
+function prfNotify(rec, role, subject) {
+  const to = rows('Users').filter(u => u.Role === role && u.Email && String(u.Active).toUpperCase() !== 'FALSE' && inScope({role: u.Role, branch: u.Branch}, rec)).map(u => u.Email);
+  if (to.length) mailTo(to.join(','), subject, '<div style="font-family:Arial,sans-serif;max-width:560px;color:#10243a"><p><b>' + EH(rec.ID) + '</b> - ' + EH(rec.Branch) + '</p><p>' + EH(subject) + '</p><p>Open the Procurement page to review it.</p></div>');
+}
+function psave(rec, d) {
+  const j = JSON.stringify(d); if (j.length > 49000) throw new Error('This request has too much data. Remove some canvass entries.');
+  rec.Data = j; rec.Status = pstat(rec, d); psheet().getRange(rec._row, 1, 1, PH.length).setValues([PH.map(k => rec[k] === undefined ? '' : rec[k])]);
+}
+function cleanItems(a) {
+  if (!Array.isArray(a) || !a.length) throw new Error('Add at least one item'); if (a.length > 30) throw new Error('Up to 30 items per request');
+  return a.map(x => {
+    const n = String(x.n || x.name || x.description || '').trim(), q = Number(x.q ?? x.qty), p = Number(x.p ?? x.price);
+    if (!n) throw new Error('Every row needs an item description');
+    if (!(q > 0)) throw new Error('Quantity must be more than 0');
+    if (!(p >= 0)) throw new Error('Enter the projected amount');
+    const c = (x.c === '' || x.c == null) ? null : Number(x.c);
+    if (c !== null && !(c >= 0)) throw new Error('Enter a valid account charge');
+    return {
+      n: n.slice(0, 200),
+      q,
+      p,
+      c,
+      unit: String(x.unit || '').trim().slice(0, 40),
+      group: String(x.group || '').trim().slice(0, 80),
+      remarks: String(x.remarks || '').trim().slice(0, 300)
+    };
+  });
+}
+
+function verifyCredential(username, password) {
+  const un = String(username || '').trim();
+  const pw = String(password || '');
+  if (!un || !pw) throw new Error('Username and password are required.');
+  const u = rows('Users').find(x => String(x.Username).toLowerCase() === un.toLowerCase());
+  if (!u || String(u.Hash).trim() !== hash(pw) || String(u.Active).toUpperCase() === 'FALSE') throw new Error('Wrong username or password.');
+  return {username: u.Username, name: u.Name, role: u.Role, branch: u.Branch || '', dept: u.Dept || '', mustChange: String(u.MustChange) === 'Y'};
 }
 
 function handle(r) {
@@ -351,18 +455,18 @@ function handle(r) {
       }
       rec.Status = r.type === 'reject' ? 'Rejected' : status(rec); save(rec); return rec.Status;
     }
-    case 'files': { findS(s, r.id); return frows().filter(f => f.RecordID === r.id).map(f => ({FileId: f.FileId, Name: f.Name, Size: f.Size, UploadedBy: f.UploadedBy, UploadedAt: f.UploadedAt})); }
+    case 'files': { findS(s, r.id); return frows().filter(f => f.RecordID === r.id).map(f => ({FileId: f.FileId, Name: f.Name, Size: f.Size, UploadedBy: f.UploadedBy, UploadedAt: f.UploadedAt, Ref: f.Ref || ''})); }
     case 'upload': {
       need(s, ['Admin','ISD','User','Approver','Dept','Reviewer']);
-      const rec = findS(s, r.id), st = status(rec); if (!adm && (st === 'Completed' || st === 'Rejected')) throw new Error('This request is closed');
+      const rec = findS(s, r.id), st = rec._prf ? rec.Status : status(rec); if (String(r.ref || '').indexOf('cv:') === 0) { const prf = rec._prf ? pdef(pdata(rec)) : null, fl = prfCfg().flow; const can = prf && (adm || rec.CreatedBy.toLowerCase() === s.username.toLowerCase() || s.role === 'ISD' || (Array.isArray(fl.award) && fl.award.some(u => String(u).toLowerCase() === s.username.toLowerCase()))); if (!can) throw new Error('You are not allowed to attach a canvass quotation'); } if (!adm && (st === 'Completed' || st === 'Rejected')) throw new Error('This request is closed');
       const set = settings(), ext = String(r.name).split('.').pop().toLowerCase();
       if (['pdf','jpg','jpeg','png'].indexOf(ext) < 0) throw new Error('Only PDF, JPG and PNG files are allowed');
       const bytes = Utilities.base64Decode(r.b64), fr = frows();
       if (bytes.length > set.MaxFileMB * 1048576) throw new Error('File is larger than ' + set.MaxFileMB + ' MB');
-      if (fr.filter(f => f.RecordID === rec.ID).length >= set.MaxFiles) throw new Error('Maximum ' + set.MaxFiles + ' files per request');
+      if (fr.filter(f => f.RecordID === rec.ID).length >= (rec._prf ? set.MaxFiles * 4 : set.MaxFiles)) throw new Error('Maximum ' + set.MaxFiles + ' files per request');
       if (fr.reduce((a, f) => a + Number(f.Size || 0), 0) + bytes.length > set.CapMB * 1048576) throw new Error('Storage limit reached. Ask the administrator to clean up old attachments.');
       const file = folder().createFile(Utilities.newBlob(bytes, r.mime || 'application/octet-stream', rec.ID + '_' + r.name));
-      fsheet().appendRow([file.getId(), rec.ID, r.name, bytes.length, r.mime || '', s.username, new Date().toISOString()]); return true;
+      fsheet().appendRow([file.getId(), rec.ID, r.name, bytes.length, r.mime || '', s.username, new Date().toISOString(), r.ref || '']); return true;
     }
     case 'getFile': {
       const f = frows().find(x => x.FileId === r.fileId); if (!f) throw new Error('File not found'); findS(s, f.RecordID);
@@ -485,6 +589,182 @@ function handle(r) {
     }
     case 'export': need(s, ['Admin']); return exportAll();
     case 'transferSql': need(s, ['Admin']); return transferSql(r.data || {});
+    case 'prfList': {
+      psheet(); const out = [];
+      rows('PRF').forEach(x => { const d = pdef(pdata(x)); if (pvis(s, x, d)) out.push({ID: x.ID, Date: x.Date, Area: x.Area, Branch: x.Branch, Reason: x.Reason, Status: x.Status, CreatedBy: x.CreatedBy, Data: d}); });
+      const pc = prfCfg(), cf = config();
+      return {rows: out, groups: pc.groups, flow: pc.flow, branches: cf.Branch, company: cf.Company, users: adm ? rows('Users').map(u => ({username: u.Username, name: u.Name, role: u.Role, dept: u.Dept})) : []};
+    }
+    case 'prfCreate': {
+      need(s, ['Admin','ISD','User','Approver','Reviewer']); const d0 = r.data || {}, br = d0.branch;
+      if (!inScope(s, {Branch: br, Area: areaOf(br)})) throw new Error('You can only create requests for your assigned branches');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(d0.date || ''))) throw new Error('Enter the date of request');
+      const reason = String(d0.reason || '').trim(); if (!reason) throw new Error('Enter the reason for the request');
+      const items = cleanItems(d0.items), psh = psheet(), pre = 'PRF-' + new Date().getFullYear() + '-'; let mx = 0;
+      rows('PRF').forEach(x => { if (String(x.ID).indexOf(pre) === 0) mx = Math.max(mx, parseInt(String(x.ID).slice(pre.length)) || 0); });
+      const d = pdef({items}); d.sign.requested = sig(s);
+      const rec = {ID: pre + ('0000' + (mx + 1)).slice(-4), Date: d0.date, Area: areaOf(br), Branch: br, Reason: reason.slice(0, 1000), CreatedBy: s.username, Data: JSON.stringify(d)}; rec.Status = pstat(rec, d);
+      psh.appendRow(PH.map(k => rec[k] === undefined ? '' : rec[k])); prfNotify(rec, 'Approver', 'New procurement request waiting for branch manager approval'); return rec.ID;
+    }
+    case 'prfEdit': {
+      need(s, ['Admin','ISD','User','Approver','Reviewer']); const rec = findS(s, r.id), d = pdef(pdata(rec)), d0 = r.data || {};
+      if (s.role === 'User' && !(rec.CreatedBy === s.username && rec.Status === 'Pending Branch Approval')) throw new Error('You can only edit your own request while it waits for branch approval');
+      if (d.flow.forwarded || d.canvass.length || (d.sign.assessor && !adm)) throw new Error('This request is locked for editing');
+      if (!inScope(s, {Branch: d0.branch, Area: areaOf(d0.branch)})) throw new Error('Branch is outside your assigned branches');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(d0.date || ''))) throw new Error('Enter the date of request');
+      if (!String(d0.reason || '').trim()) throw new Error('Enter the reason for the request');
+      d.items = cleanItems(d0.items); d.diag.items = {}; rec.Date = d0.date; rec.Branch = d0.branch; rec.Area = areaOf(d0.branch); rec.Reason = String(d0.reason).trim().slice(0, 1000); d.sign.assessor = null; psave(rec, d); return true;
+    }
+    case 'prfDelete': {
+      need(s, ['Admin','ISD','User']); const rec = findS(s, r.id), own = rec.CreatedBy === s.username;
+      if (!((adm || own) && rec.Status === 'Pending Branch Approval') && !((adm || s.role === 'ISD') && ['For ISD Assessment','For Forwarding'].indexOf(rec.Status) >= 0)) throw new Error('This request can no longer be deleted');
+      purgeFiles(f => f.RecordID === rec.ID); psheet().deleteRow(rec._row); return true;
+    }
+    case 'prfItemsEdit': {
+      need(s, ['Admin','ISD']);
+      const rec = findS(s, r.id), d = pdef(pdata(rec)), d0 = r.data || {};
+      if (d.rejected || d.sign.purchaser || d.sign.checker) throw new Error('Requested items are locked after purchase or completion');
+      if (Object.keys(d.award || {}).length) throw new Error('Requested items are locked after an award');
+      const newItems = cleanItems(d0.items);
+      if (newItems.length < d.items.length) throw new Error('Existing requested items cannot be removed here. You may add more items.');
+      d.items = newItems;
+      d.diag = {items: {}, remarks: ''};
+      d.sign.assessor = null;
+      psave(rec, d);
+      return true;
+    }
+    case 'prfSaveCfg': {
+      need(s, ['Admin']); const g = r.data.groups, f = r.data.flow;
+      if (!g || typeof g !== 'object' || !Object.keys(g).length) throw new Error('Add at least one item group');
+      if (!f || !Array.isArray(f.steps)) throw new Error('Invalid approval flow');
+      cfgSet('PRFGroups', JSON.stringify(g)); cfgSet('PRFFlow', JSON.stringify({name: String(f.name || 'PRF').trim().slice(0, 40) || 'PRF', steps: f.steps.map(x => ({k: String(x.k).slice(0, 12), l: String(x.l).slice(0, 60), u: (x.u || []).map(String)})), acct: String(f.acct || 'Accounting'), diag: (f.diag || []).map(String), award: (f.award || []).map(String)})); return true;
+    }
+    case 'prfAct': {
+      const rec = findS(s, r.id), d = pdef(pdata(rec)), v = r.data || {}, fl = prfCfg().flow, nI = d.items.length;
+      // Credentialed PRF actions deliberately authenticate the person signing this specific step.
+      // The credentials are verified server-side and are never stored in the PRF.
+      const credentialed = ['diagApprove','awardSign','awardApprove'].indexOf(String(r.type)) >= 0;
+      const actor = credentialed ? verifyCredential(v.username, v.password) : s;
+      const me = String(actor.username).toLowerCase();
+      const adm = String(actor.role || '').toLowerCase() === 'admin', deny = () => { throw new Error('Not allowed for your role'); }, bad = m => { throw new Error(m); };
+      const isd = adm || actor.role === 'ISD', acct = adm || (String(actor.role || '').toLowerCase() === 'dept' && String(actor.dept || '').trim().toLowerCase() === String(fl.acct || 'Accounting').trim().toLowerCase());
+      const inUsers = list => adm || (Array.isArray(list) && list.some(u => String(u).toLowerCase() === me));
+      const diagOk = adm || (Array.isArray(fl.diag) && fl.diag.length ? inUsers(fl.diag) : actor.role === 'ISD');
+      const awardOk = adm || (Array.isArray(fl.award) && fl.award.length ? inUsers(fl.award) : actor.role === 'ISD');
+      const stepOk = k => adm || ((fl.steps.find(x => x.k === k) || {u: []}).u || []).some(u => String(u).toLowerCase() === me);
+      if (d.rejected || d.sign.checker) bad('This request is closed'); let ret = null;
+      switch (r.type) {
+        case 'branch': if (!(adm || s.role === 'Approver')) deny(); if (d.sign.branch) bad('Already approved'); d.sign.branch = sig(s); if (v.remarks) d.rem.branch = String(v.remarks).slice(0, 500); break;
+        case 'diag': {
+          if (!diagOk) deny(); if (!d.sign.branch) bad('Waiting for branch manager approval'); const it = {};
+          Object.keys(v.items || {}).forEach(i => { const x = v.items[i]; if (+i >= 0 && +i < nI && x && x.group) it[i] = {group: String(x.group).slice(0, 60), parts: x.parts || {}, remarks: String(x.remarks || '').slice(0, 500)}; });
+          d.diag = {items: it, remarks: String(v.remarks || '').slice(0, 1000)}; d.sign.assessor = sig(s); delete d.sign.diagApproved; break;
+        }
+        case 'assess': if (!diagOk) deny(); if (!d.sign.branch) bad('Waiting for branch manager approval'); if (!Object.keys(d.diag.items).length) bad('Complete the diagnostic first'); d.sign.assessor = sig(actor); delete d.sign.diagApproved; break;
+        case 'diagApprove': {
+          if (!(adm || actor.role === 'Approver' || actor.role === 'ISD')) deny();
+          if (!d.sign.branch) bad('Branch Manager must approve the PRF before diagnostic approval');
+          if (!d.sign.assessor) bad('Diagnostic must first be prepared / assessed by ISD');
+          if (d.sign.diagApproved && !adm) bad('Diagnostic is already approved');
+          d.sign.diagApproved = sig(actor); break;
+        }
+        case 'forward': if (!isd) deny(); if (!d.sign.branch) bad('Waiting for branch manager approval'); if (!d.sign.assessor) bad('Prepared / Assessed by must be recorded before forwarding'); if (!d.sign.diagApproved) bad('Diagnostic approval is required before forwarding'); if (d.flow.forwarded) bad('Already forwarded');
+          d.flow.steps = fl.steps.map(x => x.k).filter(k => (v.steps || []).indexOf(k) >= 0); d.flow.forwarded = sig(s); break;
+        case 'charges': if (!acct) deny(); if (d.sign.verifier && !adm) bad('Already verified');
+          (v.charges || []).forEach((c, i) => { if (d.items[i]) d.items[i].c = (c === '' || c == null) ? null : Number(c); }); d.rem.acct = String(v.remarks || '').slice(0, 1000); break;
+        case 'verify': if (!acct) deny(); d.sign.verifier = sig(s); break;
+        case 'approve': {
+          const k = v.key, idx = d.flow.steps.indexOf(k);
+          if (idx < 0) bad('Not part of this request');
+          if (!d.sign.verifier) bad('Accounting verification is required before approval');
+          if (!stepOk(k)) bad('You are not assigned to this approval');
+          if (d.sign.approvals[k]) bad('Already signed');
+          for (let i = 0; i < idx; i++) if (!d.sign.approvals[d.flow.steps[i]]) bad('Waiting for ' + d.flow.steps[i] + ' first');
+          d.sign.approvals[k] = sig(s); if (v.remarks) d.rem['ap_' + k] = String(v.remarks).slice(0, 500); break;
+        }
+        case 'reject': if (!(isd || acct || (s.role === 'Approver' && !d.sign.branch) || d.flow.steps.some(stepOk))) deny(); if (d.sign.purchaser) bad('Already purchased'); d.rejected = {by: sig(s), reason: String(v.reason || '').slice(0, 300)}; break;
+        case 'canvass': {
+          if (!(adm || rec.CreatedBy.toLowerCase() === me || isd)) deny(); const i = Number(v.item); if (!(i >= 0 && i < nI)) bad('Choose the requested item');
+          const store = String(v.store || '').trim(), price = Number(v.price), nm = String(v.name || '').trim();
+          if (!store || !nm) bad('Item and store are required'); if (!(price >= 0)) bad('Enter the price'); if (!/^\d{4}-\d{2}-\d{2}$/.test(String(v.date || ''))) bad('Enter the canvass date');
+          let e = v.id ? d.canvass.find(x => x.id === v.id) : null;
+          if (e && d.award[e.item] === e.id) bad('This canvass is awarded and cannot be modified.');
+          if (!e) { if (d.canvass.length >= 60) bad('Too many canvass entries'); e = {id: 'C' + Date.now().toString(36)}; d.canvass.push(e); }
+          Object.assign(e, {item: i, name: nm.slice(0, 160), date: v.date, store: store.slice(0, 120), price, desc: String(v.desc || '').slice(0, 300), remarks: String(v.remarks || '').slice(0, 300), by: sig(s)});
+          d.sign.canvasser = sig(s); ret = e.id; break;
+        }
+        case 'canvassDel': {
+          if (!(adm || rec.CreatedBy.toLowerCase() === me || isd)) deny();
+          const e = d.canvass.find(x => x.id === v.id); if (!e) bad('Canvass entry not found');
+          const awarded = d.award[e.item] === e.id;
+          if (awarded && !adm) bad('This canvass has been awarded and cannot be deleted.');
+          if (d.sign.purchaser && !adm) bad('Already purchased');
+          if (awarded && adm && String(v.force || '') !== '1') bad('This canvass is awarded. Confirm Force Delete as Admin.');
+          if (awarded) { delete d.award[e.item]; delete d.sign.awarded; }
+          d.canvass = d.canvass.filter(x => x.id !== v.id);
+          purgeFiles(f => f.RecordID === rec.ID && f.Ref === 'cv:' + v.id);
+          break;
+        }
+        case 'award': {
+          if (!awardOk) deny();
+          if (d.sign.purchaser) bad('Already purchased');
+          const i = Number(v.item); if (!(i >= 0 && i < nI)) bad('Choose the requested item');
+          if (!v.id) delete d.award[i]; else { const e = d.canvass.find(x => x.id === v.id && x.item === i); if (!e) bad('Choose a canvass entry for this item'); d.award[i] = e.id; }
+          if (!d.items.every((x, k) => d.award[k])) { delete d.sign.awarded; delete d.sign.awardApproved; } break;
+        }
+        case 'awardSign': {
+          if (!awardOk) deny();
+          if (!d.items.every((x, k) => d.award[k])) bad('Award every requested item first');
+          if (d.sign.awarded && !adm) bad('Awarded by is already recorded');
+          d.sign.awarded = sig(actor); d.audit.awarded = sig(actor); delete d.sign.awardApproved; break;
+        }
+        case 'awardApprove': {
+          const ism = fl.steps.find(x => String(x.k || '').toUpperCase() === 'ISM');
+          const ismOk = ism && Array.isArray(ism.u) && ism.u.some(u => String(u).toLowerCase() === me);
+          if (!(adm || actor.role === 'Approver' || actor.role === 'ISD' || ismOk)) deny();
+          if (!d.sign.awarded) bad('Awarded by must be recorded first');
+          if (d.sign.awardApproved && !adm) bad('Award is already approved');
+          d.sign.awardApproved = sig(actor); break;
+        }
+        case 'buy': if (d.sign.checker) bad('This request has already been checked and is locked'); if (d.sign.purchaser && !adm) bad('Already signed'); Object.keys(v.rows || {}).forEach(i => { if (d.award[i]) d.buy[i] = {or: String(v.rows[i].or || '').slice(0, 60), store: String(v.rows[i].store || '').slice(0, 120)}; }); d.audit.purchase = sig(s); break;
+        case 'purchaser': if (d.sign.checker) bad('This request has already been checked and is locked'); if (!d.items.every((x, k) => d.award[k])) bad('Award every item first'); if (!d.sign.awardApproved) bad('Award approval is required before purchase'); if (!d.items.every((x, k) => d.buy[k] && d.buy[k].or && d.buy[k].store)) bad('Enter the OR number and store for every item'); d.sign.purchaser = sig(s); d.audit.purchaser = sig(s); break;
+        case 'dates': {
+          if (d.sign.checker) bad('This request has already been checked and is locked');
+          const compiled = v.compiled, received = v.received, transmittal = v.transmittal;
+          if (compiled !== undefined && compiled && !/^\d{4}-\d{2}-\d{2}$/.test(compiled)) bad('Invalid compiled date');
+          if (received !== undefined && received && !/^\d{4}-\d{2}-\d{2}$/.test(received)) bad('Invalid received date');
+          if (transmittal !== undefined && transmittal && !/^\d{4}-\d{2}-\d{2}$/.test(transmittal)) bad('Invalid transmittal date');
+          if (received !== undefined && received && !d.sign.purchaser) bad('Record the Purchaser first before entering the date received');
+          if (compiled !== undefined && compiled && !d.dates.received && !(received)) bad('Enter the date received before entering the date compiled');
+          if (transmittal !== undefined && transmittal && !(compiled || d.dates.compiled)) bad('Enter the date compiled before entering the transmittal date');
+          if (received !== undefined && received && compiled && compiled < received) bad('Date compiled cannot be earlier than date received');
+          if (transmittal !== undefined && transmittal && (compiled || d.dates.compiled) > transmittal) bad('Transmittal date cannot be earlier than date compiled');
+          [['received', received], ['compiled', compiled], ['transmittal', transmittal]].forEach(([k, val]) => {
+            if (val === undefined) return;
+            d.dates[k] = val || '';
+            if (val) d.audit[k] = sig(s); else delete d.audit[k];
+          });
+          break;
+        }
+        case 'isnotation': {
+          if (!isd) deny();
+          const txt = String(v.remarks || '').trim();
+          if (!txt) bad('Enter the IS notation.');
+          d.rem.isNotation = txt.slice(0, 2000);
+          d.sign.isNotation = sig(s);
+          d.audit.isNotation = sig(s);
+          break;
+        }
+        case 'notation': if (!isd) deny(); if (!d.sign.purchaser || !d.dates.received) bad('Enter the date received first'); d.sign.notation = sig(s); d.rem.notation = String(v.remarks || '').slice(0, 1000); break;
+        case 'check': if (!(adm || s.role === 'Reviewer')) deny(); if (!d.sign.notation) bad('Waiting for the ISD notation'); d.sign.checker = sig(s); d.rem.checker = String(v.remarks || '').slice(0, 1000); break;
+        default: bad('Unknown step');
+      }
+      psave(rec, d);
+      if (r.type === 'branch') prfNotify(rec, 'ISD', 'Approved by the branch manager - ready for ISD assessment');
+      if (r.type === 'assess') prfNotify(rec, 'ISD', 'PRF assessment completed - ready for forwarding');
+      if (r.type === 'forward') prfNotify(rec, 'Dept', 'A procurement request has been forwarded for your action');
+      return {status: rec.Status, id: ret};
+    }
     case 'saveLogin': {
       need(s, ['Admin']); const d = r.data;
       if (d.img !== undefined && d.img !== null) setImg('login', d.img);
