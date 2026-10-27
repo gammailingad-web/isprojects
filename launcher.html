@@ -33,7 +33,7 @@
   <script>
     // Your latest Dropbox shared-file link.
     const DROPBOX_URL =
-      "https://www.dropbox.com/scl/fi/rtc243bxqbsm53nrkq0is/isportal-url.txt?rlkey=oym77lhkqsrzm9234iytzjtpl&st=3uxl1d2k&dl=1";
+      "https://www.dropbox.com/scl/fi/rtc243bxqbsm53nrkq0is/isportal-url.txt?rlkey=oym77lhkqsrzm9234iytzjtpl&dl=1";
 
     async function openPortal() {
       const status = document.getElementById("status");
@@ -57,7 +57,9 @@
           });
           if (!response.ok) throw new Error("Dropbox returned HTTP " + response.status);
 
-          const baseUrl = (await response.text()).trim().replace(/\/+$/, "");
+          const fileText = await response.text();
+          // Only line (0), the first line of the text file, is used.
+          const baseUrl = (fileText.split(/\r?\n/)[0] || "").trim().replace(/\/+$/, "");
           const parsed = new URL(baseUrl);
           if (
             parsed.protocol !== "https:" ||
