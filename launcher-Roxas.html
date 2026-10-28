@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>ISPROJECTS Portal</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: #f3f5f8; color: #1f2937;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    main {
+      width: min(440px, calc(100% - 40px)); box-sizing: border-box;
+      padding: 32px 24px; text-align: center; background: white;
+      border: 1px solid #e5e7eb; border-radius: 16px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.07);
+    }
+    h1 { margin: 0 0 12px; font-size: 1.5rem; }
+    p { line-height: 1.5; color: #4b5563; overflow-wrap: anywhere; }
+    #retry { display: none; margin-top: 12px; padding: 10px 16px;
+      border: 0; border-radius: 8px; background: #1d4ed8; color: white;
+      cursor: pointer; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>ISPROJECTS Portal</h1>
+    <p id="status" role="status" aria-live="polite">Reading the current portal address…</p>
+    <button id="retry" type="button" onclick="openPortal()">Try again</button>
+  </main>
+  <script>
+    // Your latest Dropbox shared-file link.
+    const DROPBOX_URL =
+      "https://www.dropbox.com/scl/fi/rtc243bxqbsm53nrkq0is/isportal-url.txt?rlkey=oym77lhkqsrzm9234iytzjtpl&dl=1";
+
+    async function openPortal() {
+      const status = document.getElementById("status");
+      const retry = document.getElementById("retry");
+      retry.style.display = "none";
+      status.textContent = "Reading the current portal address…";
+
+      // Try Dropbox's content host first, then the shared-link host.
+      const contentUrl = DROPBOX_URL
+        .replace("https://www.dropbox.com/", "https://dl.dropboxusercontent.com/")
+        .replace(/[?&]dl=1\b/, "");
+      const candidates = [contentUrl, DROPBOX_URL];
+
+      let lastError;
+      for (const fileUrl of candidates) {
+        try {
+          const separator = fileUrl.includes("?") ? "&" : "?";
+          const response = await fetch(fileUrl + separator + "launcher_cache=" + Date.now(), {
+            cache: "no-store",
+            redirect: "follow"
+          });
+          if (!response.ok) throw new Error("Dropbox returned HTTP " + response.status);
+
+          const fileText = await response.text();
+          // Only line (0), the first line of the text file, is used.
+          const baseUrl = (fileText.split(/\r?\n/)[0] || "").trim().replace(/\/+$/, "");
+          const parsed = new URL(baseUrl);
+          if (
+            parsed.protocol !== "https:" ||
+            !(parsed.hostname === "trycloudflare.com" ||
+              parsed.hostname.endsWith(".trycloudflare.com")) ||
+            parsed.username || parsed.password
+          ) {
+            throw new Error("The text file must contain only a valid HTTPS trycloudflare.com URL.");
+          }
+
+          window.location.replace(parsed.origin + "/queuing.html?branch=ROXAS_BRANCH");
+          return;
+        } catch (error) {
+          lastError = error;
+          console.warn("Could not read Dropbox URL using", fileUrl, error);
+        }
+      }
+
+      status.textContent =
+        "The browser could not read the Dropbox text file. This is usually a Dropbox CORS restriction. " +
+        "The most reliable free fix is to put portal-url.txt in a public GitHub repository and use its Raw URL.";
+      retry.style.display = "inline-block";
+      console.error(lastError);
+    }
+
+    openPortal();
+  </script>
+</body>
+</html>
