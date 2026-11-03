@@ -31,9 +31,9 @@
     <button id="retry" type="button" onclick="openPortal()">Try again</button>
   </main>
   <script>
-    // Your latest Dropbox shared-file link.
-    const DROPBOX_URL =
-      "https://www.dropbox.com/scl/fi/rtc243bxqbsm53nrkq0is/isportal-url.txt?rlkey=oym77lhkqsrzm9234iytzjtpl&dl=1";
+    // Public GitHub Raw URL containing the current portal addresses.
+    const URL_FILE =
+      "https://raw.githubusercontent.com/gammailingad-web/ISProjects-URL-Manager/main/isportal-url.txt";
 
     async function openPortal() {
       const status = document.getElementById("status");
@@ -41,48 +41,39 @@
       retry.style.display = "none";
       status.textContent = "Reading the current portal address…";
 
-      // Try Dropbox's content host first, then the shared-link host.
-      const contentUrl = DROPBOX_URL
-        .replace("https://www.dropbox.com/", "https://dl.dropboxusercontent.com/")
-        .replace(/[?&]dl=1\b/, "");
-      const candidates = [contentUrl, DROPBOX_URL];
-
-      let lastError;
-      for (const fileUrl of candidates) {
-        try {
-          const separator = fileUrl.includes("?") ? "&" : "?";
-          const response = await fetch(fileUrl + separator + "launcher_cache=" + Date.now(), {
-            cache: "no-store",
-            redirect: "follow"
-          });
-          if (!response.ok) throw new Error("Dropbox returned HTTP " + response.status);
-
-          const fileText = await response.text();
-          // Only line (0), the first line of the text file, is used.
-          const baseUrl = (fileText.split(/\r?\n/)[0] || "").trim().replace(/\/+$/, "");
-          const parsed = new URL(baseUrl);
-          if (
-            parsed.protocol !== "https:" ||
-            !(parsed.hostname === "trycloudflare.com" ||
-              parsed.hostname.endsWith(".trycloudflare.com")) ||
-            parsed.username || parsed.password
-          ) {
-            throw new Error("The text file must contain only a valid HTTPS trycloudflare.com URL.");
-          }
-
-          window.location.replace(parsed.origin + "/queuing.html?branch=DI");
-          return;
-        } catch (error) {
-          lastError = error;
-          console.warn("Could not read Dropbox URL using", fileUrl, error);
+      try {
+        const response = await fetch(URL_FILE + "?launcher_cache=" + Date.now(), {
+          cache: "no-store",
+          redirect: "follow"
+        });
+        if (!response.ok) {
+          throw new Error("GitHub returned HTTP " + response.status);
         }
-      }
 
-      status.textContent =
-        "The browser could not read the Dropbox text file. This is usually a Dropbox CORS restriction. " +
-        "The most reliable free fix is to put portal-url.txt in a public GitHub repository and use its Raw URL.";
-      retry.style.display = "inline-block";
-      console.error(lastError);
+        const fileText = await response.text();
+
+        // Use ONLY the first line (ISProjects URL); ignore line 2 (COC Portal URL).
+        const firstLine = (fileText.split(/\\r?\\n/)[0] || "").trim();
+        const parsed = new URL(firstLine);
+
+        if (
+          parsed.protocol !== "https:" ||
+          !(parsed.hostname === "trycloudflare.com" ||
+            parsed.hostname.endsWith(".trycloudflare.com")) ||
+          parsed.username || parsed.password
+        ) {
+          throw new Error("Line 1 must be a valid HTTPS trycloudflare.com URL.");
+        }
+
+        // Preserve this launcher's original queuing destination and branch code.
+        window.location.replace(parsed.origin + "/queuing.html?branch=DI");
+      } catch (error) {
+        status.textContent =
+          "Unable to read the first line of the GitHub URL file. Check that the repository is public " +
+          "and line 1 of isportal-url.txt contains a valid ISProjects HTTPS trycloudflare.com URL.";
+        retry.style.display = "inline-block";
+        console.error("Could not read the GitHub URL file:", error);
+      }
     }
 
     openPortal();
