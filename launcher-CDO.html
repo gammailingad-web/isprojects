@@ -53,7 +53,7 @@
         const fileText = await response.text();
 
         // Use ONLY the first line (ISProjects URL); ignore line 2 (COC Portal URL).
-        const firstLine = (fileText.split(/\\r?\\n/)[0] || "").trim();
+        const firstLine = (fileText.split(/\r?\n/)[0] || "").trim();
         const parsed = new URL(firstLine);
 
         if (
